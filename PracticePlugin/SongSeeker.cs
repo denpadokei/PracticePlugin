@@ -4,6 +4,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using HMUI;
+using BeatSaberMarkupLanguage;
+using IPA.Logging;
+using BS_Utils.Utilities;
 
 namespace PracticePlugin
 {
@@ -14,9 +18,9 @@ namespace PracticePlugin
         [SerializeField] internal AudioSource _songAudioSource;
         private LooperUI _looperUI;
 
-        private Image _seekBackg;
-        private Image _seekBar;
-        private Image _seekCursor;
+        private ImageView _seekBackg;
+        private ImageView _seekBar;
+        private ImageView _seekCursor;
         private TMP_Text _currentTime;
         private TMP_Text _timeLength;
 
@@ -43,6 +47,10 @@ namespace PracticePlugin
         internal int _startTimeSamples;
         public void Init()
         {
+            var tex = Texture2D.whiteTexture;
+            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);
+
+
             _songAudioSource = Plugin.AudioTimeSync.GetPrivateField<AudioSource>("_audioSource");
             var rectTransform = transform as RectTransform;
             rectTransform.anchorMin = Vector2.right * 0.5f;
@@ -50,32 +58,42 @@ namespace PracticePlugin
             rectTransform.sizeDelta = ParentSize;
             rectTransform.anchoredPosition = new Vector2(0, 16);
 
-            _seekBackg = new GameObject("Background").AddComponent<Image>();
+            _seekBackg = new GameObject("Background").AddComponent<ImageView>();
             rectTransform = _seekBackg.rectTransform;
             rectTransform.SetParent(transform, false);
             rectTransform.sizeDelta = SeekBarSize;
+            _seekBackg.sprite = sprite;
+            _seekBackg.type = Image.Type.Simple;
             _seekBackg.color = BackgroundColor;
+            _seekBackg.material = Utilities.ImageResources.NoGlowMat;
 
-            _seekBar = new GameObject("Seek Bar").AddComponent<Image>();
+            _seekBar = new GameObject("Seek Bar").AddComponent<ImageView>();
             rectTransform = _seekBar.rectTransform;
             rectTransform.SetParent(transform, false);
             rectTransform.sizeDelta = SeekBarSize;
-            var tex = Texture2D.whiteTexture;
-            var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);
+            
             _seekBar.sprite = sprite;
             _seekBar.type = Image.Type.Filled;
             _seekBar.fillMethod = Image.FillMethod.Horizontal;
             _seekBar.color = ForegroundColor;
+            _seekBar.material = Utilities.ImageResources.NoGlowMat;
 
-            _seekCursor = new GameObject("Seek Cursor").AddComponent<Image>();
+            _seekCursor = new GameObject("Seek Cursor").AddComponent<ImageView>();
             rectTransform = _seekCursor.rectTransform;
             rectTransform.SetParent(_seekBar.transform, false);
             rectTransform.anchorMin = Vector2.up * 0.5f;
             rectTransform.anchorMax = Vector2.up * 0.5f;
             rectTransform.sizeDelta = SeekCursorSize;
-            _seekCursor.color = SeekCursorColor;
 
-            _currentTime = Plugin.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(-83f, -1f));
+            _seekCursor.sprite = sprite;
+            _seekCursor.type = Image.Type.Simple;
+            _seekCursor.color = SeekCursorColor;
+            _seekCursor.material = Utilities.ImageResources.NoGlowMat;
+
+
+
+
+            _currentTime = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(-83f, -1f));
             _currentTime.fontSize = 5f;
            // rectTransform = _currentTime.rectTransform;
            // rectTransform.anchorMin = Vector2.up * 0.5f;
@@ -86,7 +104,7 @@ namespace PracticePlugin
          //   _currentTime.fontSizeMin = 1;
             _currentTime.alignment = TextAlignmentOptions.Right;
             
-            _timeLength = Plugin.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(87f, -1f));
+            _timeLength = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(87f, -1f));
             _timeLength.fontSize = 5f;
             _timeLength.alignment = TextAlignmentOptions.Left;
 
@@ -161,11 +179,14 @@ namespace PracticePlugin
 
         public void OnDrag(PointerEventData eventData)
         {
+            Debug.Log(eventData.position);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(transform as RectTransform, eventData.position,
                 _mainCamera, out var pos);
+            Debug.Log(eventData.position);
             var posX = pos.x + HalfSeekBarSize;
+            Debug.Log(posX);
             PlaybackPosition = Mathf.InverseLerp(0, SeekBarSize.x, posX);
-
+            Debug.Log(PlaybackPosition);
             CheckLooperCursorStick();
             UpdateCurrentTimeText(PlaybackPosition);
         }
