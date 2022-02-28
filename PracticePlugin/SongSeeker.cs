@@ -9,15 +9,18 @@ using BeatSaberMarkupLanguage;
 using IPA.Logging;
 using BS_Utils.Utilities;
 using System.Linq;
+using Zenject;
 
 namespace PracticePlugin
 {
-    public class SongSeeker : MonoBehaviour, IDragHandler, IPointerDownHandler
+    public class SongSeeker : MonoBehaviour, IDragHandler, IPointerDownHandler, IInitializable
     {
         public float PlaybackPosition { get; private set; }
 
-        [SerializeField] internal AudioSource _songAudioSource;
+        private AudioTimeSyncController _audioTimeSyncController;
+        internal AudioSource _songAudioSource;
         private LooperUI _looperUI;
+        private SongSeekBeatmapHandler _songSeekBeatmapHandler;
 
         private ImageView _seekBackg;
         private ImageView _seekBar;
@@ -47,13 +50,21 @@ namespace PracticePlugin
         private bool init = false;
         internal int _startTimeSamples;
         private float PlayBackPosition = 0.0f;
+
+        [Inject]
+        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI)
+        {
+            this._audioTimeSyncController = audioTimeSyncController;
+            this._songSeekBeatmapHandler = songSeekBeatmapHandler;
+            this._looperUI = looperUI;
+        }
+
         public void Init()
         {
             var tex = Texture2D.whiteTexture;
             var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);
 
-
-            _songAudioSource = Plugin.AudioTimeSync.GetPrivateField<AudioSource>("_audioSource");
+            _songAudioSource = _audioTimeSyncController.GetPrivateField<AudioSource>("_audioSource");
             var rectTransform = transform as RectTransform;
             rectTransform.anchorMin = Vector2.right * 0.5f;
             rectTransform.anchorMax = Vector2.right * 0.5f;
@@ -116,8 +127,6 @@ namespace PracticePlugin
             rectTransform = looperObj.AddComponent<RectTransform>();
             rectTransform.sizeDelta = SeekBarSize;
             rectTransform.anchoredPosition = new Vector2(0, LooperUITopMargin - 2f);
-            _looperUI = looperObj.AddComponent<LooperUI>();
-            _looperUI.Init(this);
             _looperUI.OnDragEndEvent += LooperUIOnOnDragEndEvent;
 
             if (_looperUI.StartTime != 0)
@@ -210,7 +219,7 @@ namespace PracticePlugin
         {
             _songAudioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, _songAudioSource.clip.samples, PlaybackPosition));
             _songAudioSource.time = _songAudioSource.time - Mathf.Min(AheadTime, _songAudioSource.time);
-            SongSeekBeatmapHandler.OnSongTimeChanged(_songAudioSource.time, Mathf.Min(AheadTime, _songAudioSource.time));
+            this._songSeekBeatmapHandler.OnSongTimeChanged(_songAudioSource.time, Mathf.Min(AheadTime, _songAudioSource.time));
             NoFailGameEnergy.hasFailed = false;
         }
 
@@ -236,6 +245,11 @@ namespace PracticePlugin
         private static string FormatTimeSpan(TimeSpan ts)
         {
             return ts.ToString((int)ts.TotalHours > 0 ? @"h\:m\:ss" : @"m\:ss");
+        }
+
+        public void Initialize()
+        {
+            this.Init();
         }
     }
 }

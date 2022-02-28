@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using BeatSaberMarkupLanguage;
+using PracticePlugin.Models;
+using Zenject;
 
 namespace PracticePlugin
 {
@@ -44,12 +46,12 @@ namespace PracticePlugin
         private LooperCursor _draggingCursor;
 
         private Camera _mainCamera;
-
-        public void Init(SongSeeker songSeeker)
+        [Inject]
+        public void Init(SongSeeker songSeeker, SongTimeInfoEntity songTimeInfoEntity)
         {
             _songSeeker = songSeeker;
 
-            if (Plugin.PlayingNewSong)
+            if (songTimeInfoEntity.PlayingNewSong)
             {
                 _prevStartTime = 0;
                 _prevEndTime = 1;

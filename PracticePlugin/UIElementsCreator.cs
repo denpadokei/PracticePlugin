@@ -4,26 +4,36 @@ using UnityEngine;
 using BeatSaberMarkupLanguage;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Attributes;
+using Zenject;
+using PracticePlugin.Models;
+
 namespace PracticePlugin
 {
-    public class UIElementsCreator : MonoBehaviour
+    public class UIElementsCreator : MonoBehaviour, IInitializable
     {
         public event Action<float> ValueChangedEvent;
-        public static SongSeeker SongSeeker { get; private set; }
+        public static SongSeeker SongSeeker;
         internal static float defaultNJS;
         internal static float defaultOffset;
         internal static PracticeUI practiceUI;
+        private SongTimeInfoEntity _songTimeInfoEntity;
+        public BeatmapObjectSpawnController _spawnController;
         internal static float _newTimeScale { get; private set; } = 1f;
+        private bool _practiceMode;
 
-        public void Init()
+        [Inject]
+        public void Constractor(BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity)
         {
-            //  Invoke(nameof(InitDelayed), 0.1f);
+            this._spawnController = beatmapObjectSpawnController;
+            this._songTimeInfoEntity = songTimeInfoEntity;
+        }
+        public void Initialize()
+        {
             InitDelayed();
         }
-
         private void InitDelayed()
         {
-            if (Plugin.PracticeMode)
+            if (this._practiceMode)
             {
                 var seekerObj = new GameObject("Song Seeker");
                 seekerObj.transform.SetParent(transform, false);
@@ -31,7 +41,7 @@ namespace PracticePlugin
                 SongSeeker = seekerObj.AddComponent<SongSeeker>();
                 SongSeeker.Init();
                 new GameObject("No Fail Game Energy").AddComponent<NoFailGameEnergy>();
-                defaultNJS = Plugin._spawnController.GetPrivateField<BeatmapObjectSpawnController.InitData>("_initData").noteJumpMovementSpeed;
+                defaultNJS = _spawnController.GetPrivateField<BeatmapObjectSpawnController.InitData>("_initData").noteJumpMovementSpeed;
            //     PracticeUI.instance.njs = defaultNJS;
                 //        Console.WriteLine("NJS: " + UIElementsCreator.defaultNJS);
                 defaultOffset = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.difficultyBeatmap.noteJumpStartBeatOffset;
@@ -41,22 +51,39 @@ namespace PracticePlugin
 
         }
 
-        private void OnEnable()
+        public void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
         {
+            BeatmapObjectSpawnMovementData spawnMovementData = _spawnController.GetPrivateField<BeatmapObjectSpawnMovementData>("_beatmapObjectSpawnMovementData");
+
+            float bpm = _spawnController.GetPrivateField<VariableBpmProcessor>("_variableBpmProcessor").currentBpm;
+
+
+            if (this._songTimeInfoEntity.adjustNJSWithSpeed) {
+                float newNJS = njs * (1 / this._songTimeInfoEntity.TimeScale);
+                njs = newNJS;
+            }
+
+
+
+            spawnMovementData.SetPrivateField("_startNoteJumpMovementSpeed", njs);
+            spawnMovementData.SetPrivateField("_noteJumpStartBeatOffset", noteJumpStartBeatOffset);
+
+            spawnMovementData.Update(bpm, _spawnController.GetPrivateField<float>("_jumpOffsetY"));
 
 
         }
 
-        public static void SpawnOffsetController_ValueChangedEvent(float offset)
+
+        public void SpawnOffsetController_ValueChangedEvent(float offset)
         {
             //  Plugin.AdjustNjsAndOffset();
-            Plugin.UpdateSpawnMovementData(practiceUI.njs, practiceUI.offset);
+            UpdateSpawnMovementData(practiceUI.njs, practiceUI.offset);
         }
 
-        public static void NjsController_ValueChangedEvent(float njs)
+        public void NjsController_ValueChangedEvent(float njs)
         {
             //  Plugin.AdjustNjsAndOffset();
-            Plugin.UpdateSpawnMovementData(practiceUI.njs, practiceUI.offset);
+            UpdateSpawnMovementData(practiceUI.njs, practiceUI.offset);
 
         }
 
@@ -70,7 +97,7 @@ namespace PracticePlugin
             {
                 SongSeeker._startTimeSamples = SongSeeker._songAudioSource.timeSamples - 1;
                 SongSeeker.ApplyPlaybackPosition();
-                Plugin.TimeScale = practiceUI.speed;
+                this._songTimeInfoEntity.TimeScale = practiceUI.speed;
             }
 
             //      Destroy(_speedSettings);
