@@ -10,15 +10,17 @@ using IPA.Logging;
 using BS_Utils.Utilities;
 using System.Linq;
 using Zenject;
+using IPA.Utilities;
+using BeatSaberMarkupLanguage.ViewControllers;
 
 namespace PracticePlugin
 {
-    public class SongSeeker : MonoBehaviour, IDragHandler, IPointerDownHandler, IInitializable
+    public class SongSeeker : BSMLAutomaticViewController, IDragHandler, IPointerDownHandler, IInitializable
     {
         public float PlaybackPosition { get; private set; }
 
         private AudioTimeSyncController _audioTimeSyncController;
-        internal AudioSource _songAudioSource;
+        private AudioSource _songAudioSource;
         private LooperUI _looperUI;
         private SongSeekBeatmapHandler _songSeekBeatmapHandler;
 
@@ -27,9 +29,6 @@ namespace PracticePlugin
         private ImageView _seekCursor;
         private TMP_Text _currentTime;
         private TMP_Text _timeLength;
-
-        private Camera _mainCamera;
-
         private const float AheadTime = 1f;
 
         public static readonly Vector2 SeekBarSize = new Vector2(100, 2);
@@ -47,7 +46,6 @@ namespace PracticePlugin
 
         private const float StickToLooperCursorDistance = 0.02f;
         private const float LooperUITopMargin = -5f;
-        private bool init = false;
         internal int _startTimeSamples;
         private float PlayBackPosition = 0.0f;
 
@@ -63,80 +61,104 @@ namespace PracticePlugin
         {
             var tex = Texture2D.whiteTexture;
             var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);
-
-            _songAudioSource = _audioTimeSyncController.GetPrivateField<AudioSource>("_audioSource");
-            var rectTransform = transform as RectTransform;
-            rectTransform.anchorMin = Vector2.right * 0.5f;
-            rectTransform.anchorMax = Vector2.right * 0.5f;
-            rectTransform.sizeDelta = ParentSize;
-            rectTransform.anchoredPosition = new Vector2(0, 16);
-
-            _seekBackg = new GameObject("Background").AddComponent<ImageView>();
-            rectTransform = _seekBackg.rectTransform;
-            rectTransform.SetParent(transform, false);
-            rectTransform.sizeDelta = SeekBarSize + new Vector2(0, 7);
-            rectTransform.anchoredPosition = new Vector2(0, -1);
-            _seekBackg.sprite = sprite;
-            _seekBackg.type = Image.Type.Simple;
-            _seekBackg.color = BackgroundColor;
-            _seekBackg.material = Utilities.ImageResources.NoGlowMat;
-
-            _seekBar = new GameObject("Seek Bar").AddComponent<ImageView>();
-            rectTransform = _seekBar.rectTransform;
-            rectTransform.SetParent(transform, false);
-            rectTransform.sizeDelta = SeekBarSize;
-            
-            _seekBar.sprite = sprite;
-            _seekBar.type = Image.Type.Filled;
-            _seekBar.fillMethod = Image.FillMethod.Horizontal;
-            _seekBar.color = ForegroundColor;
-            _seekBar.material = Utilities.ImageResources.NoGlowMat;
-
-            _seekCursor = new GameObject("Seek Cursor").AddComponent<ImageView>();
-            rectTransform = _seekCursor.rectTransform;
-            rectTransform.SetParent(_seekBar.transform, false);
-            rectTransform.anchorMin = Vector2.up * 0.5f;
-            rectTransform.anchorMax = Vector2.up * 0.5f;
-            rectTransform.sizeDelta = SeekCursorSize;
-
-            _seekCursor.sprite = sprite;
-            _seekCursor.type = Image.Type.Simple;
-            _seekCursor.color = SeekCursorColor;
-            _seekCursor.material = Utilities.ImageResources.NoGlowMat;
-
-
-
-
-            _currentTime = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(-83f, -1f));
-            _currentTime.fontSize = 5f;
-           // rectTransform = _currentTime.rectTransform;
-           // rectTransform.anchorMin = Vector2.up * 0.5f;
-          //  rectTransform.anchorMax = Vector2.up * 0.5f;
-         //   rectTransform.sizeDelta = TimeTextSize;
-        //    rectTransform.anchoredPosition = new Vector2(-(TimeTextSize.x / 2) - TimeTextMargin, 0);
-      //      _currentTime.enableAutoSizing = true;
-         //   _currentTime.fontSizeMin = 1;
-            _currentTime.alignment = TextAlignmentOptions.Right;
-            
-            _timeLength = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(87f, -1f));
-            _timeLength.fontSize = 5f;
-            _timeLength.alignment = TextAlignmentOptions.Left;
-
-            var looperObj = new GameObject("Looper UI");
-            looperObj.transform.SetParent(_seekBar.rectTransform, false);
-            rectTransform = looperObj.AddComponent<RectTransform>();
-            rectTransform.sizeDelta = SeekBarSize;
-            rectTransform.anchoredPosition = new Vector2(0, LooperUITopMargin - 2f);
-            _looperUI.OnDragEndEvent += LooperUIOnOnDragEndEvent;
-
-            if (_looperUI.StartTime != 0)
-            {
-                PlaybackPosition = _looperUI.StartTime;
-         //       Invoke(nameof(ApplyPlaybackPosition), 0.1f);
-           //     ApplyPlaybackPosition();
+            try {
+                _songAudioSource = _audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             }
-            _mainCamera = Camera.main;
+            catch (Exception e) {
+                Logger.Error(e);
+            }
+            try {
+                var rectTransform = transform as RectTransform;
+                rectTransform.anchorMin = Vector2.right * 0.5f;
+                rectTransform.anchorMax = Vector2.right * 0.5f;
+                rectTransform.sizeDelta = ParentSize;
+                rectTransform.anchoredPosition = new Vector2(0, 16);
+            }
+            catch (Exception e) {
+                Logger.Error(e);
+            }
+            try {
+                _seekBackg = new GameObject("Background").AddComponent<ImageView>();
+                var rectTransform = _seekBackg.rectTransform;
+                rectTransform.SetParent(transform, false);
+                rectTransform.sizeDelta = SeekBarSize + new Vector2(0, 7);
+                rectTransform.anchoredPosition = new Vector2(0, -1);
+                _seekBackg.sprite = sprite;
+                _seekBackg.type = Image.Type.Simple;
+                _seekBackg.color = BackgroundColor;
+                _seekBackg.material = Utilities.ImageResources.NoGlowMat;
+            }
+            catch (Exception e) {
+                Logger.Error(e);
+            }
+            try {
+                _seekBar = new GameObject("Seek Bar").AddComponent<ImageView>();
+                var rectTransform = _seekBar.rectTransform;
+                rectTransform.SetParent(transform, false);
+                rectTransform.sizeDelta = SeekBarSize;
 
+                _seekBar.sprite = sprite;
+                _seekBar.type = Image.Type.Filled;
+                _seekBar.fillMethod = Image.FillMethod.Horizontal;
+                _seekBar.color = ForegroundColor;
+                _seekBar.material = Utilities.ImageResources.NoGlowMat;
+            }
+            catch (Exception e) {
+                Logger.Error(e);
+            }
+            try {
+                _seekCursor = new GameObject("Seek Cursor").AddComponent<ImageView>();
+                var rectTransform = _seekCursor.rectTransform;
+                rectTransform.SetParent(_seekBar.transform, false);
+                rectTransform.anchorMin = Vector2.up * 0.5f;
+                rectTransform.anchorMax = Vector2.up * 0.5f;
+                rectTransform.sizeDelta = SeekCursorSize;
+
+                _seekCursor.sprite = sprite;
+                _seekCursor.type = Image.Type.Simple;
+                _seekCursor.color = SeekCursorColor;
+                _seekCursor.material = Utilities.ImageResources.NoGlowMat;
+
+            }
+            catch (Exception e) {
+                Logger.Error(e);
+            }
+            try {
+                _currentTime = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(-83f, -1f));
+                _currentTime.fontSize = 5f;
+                //rectTransform = _currentTime.rectTransform;
+                //rectTransform.anchorMin = Vector2.up * 0.5f;
+                //rectTransform.anchorMax = Vector2.up * 0.5f;
+                //rectTransform.sizeDelta = TimeTextSize;
+                //rectTransform.anchoredPosition = new Vector2(-(TimeTextSize.x / 2) - TimeTextMargin, 0);
+                //_currentTime.enableAutoSizing = true;
+                //_currentTime.fontSizeMin = 1;
+                _currentTime.alignment = TextAlignmentOptions.Right;
+
+                _timeLength = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(87f, -1f));
+                _timeLength.fontSize = 5f;
+                _timeLength.alignment = TextAlignmentOptions.Left;
+            }
+            catch (Exception e) {
+                Logger.Error(e);
+            }
+            try {
+                var looperObj = new GameObject("Looper UI");
+                looperObj.transform.SetParent(_seekBar.rectTransform, false);
+                var rectTransform = looperObj.AddComponent<RectTransform>();
+                rectTransform.sizeDelta = SeekBarSize;
+                rectTransform.anchoredPosition = new Vector2(0, LooperUITopMargin - 2f);
+                _looperUI.OnDragEndEvent += LooperUIOnOnDragEndEvent;
+
+                if (_looperUI.StartTime != 0) {
+                    PlaybackPosition = _looperUI.StartTime;
+                    //Invoke(nameof(ApplyPlaybackPosition), 0.1f);
+                    //ApplyPlaybackPosition();
+                }
+            }
+            catch (Exception e) {
+                Logger.Error(e);
+            }
         }
 
         private void LooperUIOnOnDragEndEvent()
@@ -157,7 +179,6 @@ namespace PracticePlugin
 
         private void OnDisable()
         {
-            init = true;
             if (_songAudioSource == null || _songAudioSource.clip == null) return;
             var newTimeSamples = Mathf.RoundToInt(Mathf.Lerp(0, _songAudioSource.clip.samples, PlaybackPosition));
             if (_startTimeSamples == newTimeSamples) return;
@@ -167,7 +188,7 @@ namespace PracticePlugin
         public void OnUpdate()
         {
             if (gameObject.activeInHierarchy || _looperUI == null || _songAudioSource == null || _songAudioSource.clip == null) return;
-            if(!init)
+            if(this.enabled)
             {
                 PlaybackPosition = (float)_songAudioSource.timeSamples / _songAudioSource.clip.samples;
             }

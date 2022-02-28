@@ -13,7 +13,7 @@ using Zenject;
 using System.Reflection;
 using PracticePlugin.Configuration;
 
-namespace PracticePlugin
+namespace PracticePlugin.Views
 {
     public class PracticeUI : BSMLResourceViewController, IInitializable
     {
@@ -94,20 +94,12 @@ namespace PracticePlugin
           if(gameObject.GetComponent<Touchable>() == null) 
                 gameObject.AddComponent<Touchable>();
         }
-
-        private BeatmapObjectSpawnController _spawnController;
-        private PauseMenuManager _pauseMenuManager;
-        // たぶんいらない
-        private SaberManager _saberManager;
         private UIElementsCreator _uiElementsCreator;
         private GameEnergyCounter _gameEnergyCounter;
         private PracticeUI _practiceUI;
         [Inject]
         public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, PauseMenuManager pauseMenuManager, SaberManager saberManager, BeatmapObjectSpawnController beatmapObjectSpawnController, GameEnergyCounter gameEnergyCounter, UIElementsCreator uIElementsCreator, PracticeUI practiceUI)
         {
-            this._spawnController = beatmapObjectSpawnController;
-            this._pauseMenuManager = pauseMenuManager;
-            this._saberManager = saberManager;
             this._gameEnergyCounter = gameEnergyCounter;
             this._uiElementsCreator = uIElementsCreator;
             this._practiceUI = practiceUI;
@@ -117,12 +109,12 @@ namespace PracticePlugin
         {
             try {
                 
-                Console.WriteLine("Atemmpting Practice Plugin UI");
+                Logger.Debug("Atemmpting Practice Plugin UI");
 
                 var canvas = GameObject.Find("PauseMenu").transform.Find("Wrapper").transform.Find("MenuWrapper").transform.Find("Canvas");
 
                 if (canvas == null) {
-                    Console.WriteLine("Canvas Null");
+                    Logger.Debug("Canvas Null");
                 }
 
 
@@ -143,7 +135,7 @@ namespace PracticePlugin
                 }
             }
             catch (Exception ex) {
-                Console.WriteLine(ex.ToString());
+                Logger.Debug(ex.ToString());
             }
         }
     }

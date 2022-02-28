@@ -6,10 +6,11 @@ using UnityEngine.UI;
 using BeatSaberMarkupLanguage;
 using PracticePlugin.Models;
 using Zenject;
+using BeatSaberMarkupLanguage.ViewControllers;
 
 namespace PracticePlugin
 {
-    public class LooperUI : MonoBehaviour
+    public class LooperUI : BSMLAutomaticViewController
     {
         public float StartTime
         {
@@ -44,8 +45,6 @@ namespace PracticePlugin
         private LooperCursor _endCursor;
 
         private LooperCursor _draggingCursor;
-
-        private Camera _mainCamera;
         [Inject]
         public void Init(SongSeeker songSeeker, SongTimeInfoEntity songTimeInfoEntity)
         {
@@ -117,8 +116,6 @@ namespace PracticePlugin
 
             _startCursor.Init(LooperCursor.Type.Start);
             _endCursor.Init(LooperCursor.Type.End);
-
-            _mainCamera = Camera.main;
         }
 
         private void CursorOnBeginDragEvent(LooperCursor cursor, PointerEventData eventData)

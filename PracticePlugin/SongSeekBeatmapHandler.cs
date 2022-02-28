@@ -131,7 +131,7 @@ namespace PracticePlugin
             var notesA = _notePool.activeItems.ToList();
             foreach (var noteA in notesA)
             {
-                //               Console.WriteLine("Despawning, Length: " + notesA.Count);
+                //               Logger.Debug("Despawning, Length: " + notesA.Count);
                 _beatmapObjectManager.DissolveAllObjects(noteA);
             }
             

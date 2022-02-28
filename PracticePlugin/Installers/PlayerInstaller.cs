@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PracticePlugin.Views;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace PracticePlugin.Installers
         {
             this.Container.BindInterfacesAndSelfTo<PracticeUI>().FromNewComponentAsViewController().AsCached().NonLazy();
             this.Container.BindInterfacesAndSelfTo<LooperUI>().FromNewComponentAsViewController().AsCached();
-            this.Container.BindInterfacesAndSelfTo<SongSeeker>().FromNewComponentOnNewGameObject().AsCached();
+            this.Container.BindInterfacesAndSelfTo<SongSeeker>().FromNewComponentAsViewController().AsCached();
             this.Container.BindInterfacesAndSelfTo<UIElementsCreator>().FromNewComponentOnNewGameObject().AsCached();
             this.Container.BindInterfacesAndSelfTo<SongSeekBeatmapHandler>().AsCached();
         }

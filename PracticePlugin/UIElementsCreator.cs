@@ -6,26 +6,31 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Attributes;
 using Zenject;
 using PracticePlugin.Models;
+using PracticePlugin.Views;
+using IPA.Utilities;
 
 namespace PracticePlugin
 {
     public class UIElementsCreator : MonoBehaviour, IInitializable
     {
         public event Action<float> ValueChangedEvent;
-        public static SongSeeker SongSeeker;
+        private SongSeeker _songSeeker;
         internal static float defaultNJS;
         internal static float defaultOffset;
-        internal static PracticeUI practiceUI;
+        internal PracticeUI practiceUI;
         private SongTimeInfoEntity _songTimeInfoEntity;
         public BeatmapObjectSpawnController _spawnController;
+        AudioTimeSyncController _audioTimeSyncController;
         internal static float _newTimeScale { get; private set; } = 1f;
-        private bool _practiceMode;
 
         [Inject]
-        public void Constractor(BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity)
+        public void Constractor(BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity, PracticeUI practiceUI, SongSeeker songSeeker, AudioTimeSyncController audioTimeSyncController)
         {
             this._spawnController = beatmapObjectSpawnController;
             this._songTimeInfoEntity = songTimeInfoEntity;
+            this.practiceUI = practiceUI;
+            this._songSeeker = songSeeker;
+            this._audioTimeSyncController = audioTimeSyncController;
         }
         public void Initialize()
         {
@@ -33,22 +38,16 @@ namespace PracticePlugin
         }
         private void InitDelayed()
         {
-            if (this._practiceMode)
+            if (_songTimeInfoEntity.PracticeMode)
             {
-                var seekerObj = new GameObject("Song Seeker");
-                seekerObj.transform.SetParent(transform, false);
-                seekerObj.AddComponent<RectTransform>();
-                SongSeeker = seekerObj.AddComponent<SongSeeker>();
-                SongSeeker.Init();
                 new GameObject("No Fail Game Energy").AddComponent<NoFailGameEnergy>();
                 defaultNJS = _spawnController.GetPrivateField<BeatmapObjectSpawnController.InitData>("_initData").noteJumpMovementSpeed;
            //     PracticeUI.instance.njs = defaultNJS;
-                //        Console.WriteLine("NJS: " + UIElementsCreator.defaultNJS);
+                //        Logger.Debug("NJS: " + UIElementsCreator.defaultNJS);
                 defaultOffset = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.difficultyBeatmap.noteJumpStartBeatOffset;
           //      PracticeUI.instance.offset = defaultOffset;
-                //        Console.WriteLine("Offset: " + UIElementsCreator.defaultOffset);
+                //        Logger.Debug("Offset: " + UIElementsCreator.defaultOffset);
             }
-
         }
 
         public void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
@@ -89,18 +88,19 @@ namespace PracticePlugin
 
         private void OnDisable()
         {
-            if (ValueChangedEvent != null)
-            {
-                ValueChangedEvent(_newTimeScale);
+            try {
+                ValueChangedEvent?.Invoke(_newTimeScale);
+                if (this._audioTimeSyncController.songTime > 0) {
+                    var audioSouece = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
+                    _songSeeker._startTimeSamples = audioSouece.timeSamples - 1;
+                    _songSeeker.ApplyPlaybackPosition();
+                    this._songTimeInfoEntity.TimeScale = practiceUI.speed;
+                }
+                //      Destroy(_speedSettings);
             }
-            if(SongSeeker._songAudioSource.time > 0)
-            {
-                SongSeeker._startTimeSamples = SongSeeker._songAudioSource.timeSamples - 1;
-                SongSeeker.ApplyPlaybackPosition();
-                this._songTimeInfoEntity.TimeScale = practiceUI.speed;
+            catch (Exception e) {
+                Logger.Error(e);
             }
-
-            //      Destroy(_speedSettings);
         }
 
         private void SpeedControllerOnValueChangedEvent(float timeScale)

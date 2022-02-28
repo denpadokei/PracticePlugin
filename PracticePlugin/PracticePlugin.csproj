@@ -118,6 +118,7 @@
     <Compile Include="Installers\CustomEffectPoolsInstaller.cs" />
     <Compile Include="Installers\PlayerInstaller.cs" />
     <Compile Include="Installers\PracticeAppInstaller.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="LooperCursor.cs" />
     <Compile Include="LooperUI.cs" />
     <Compile Include="Models\AudioSpeedController.cs" />

@@ -140,7 +140,7 @@ namespace PracticePlugin.Models
                 //     AudioTimeSync.SetPrivateField("_timeScale", _timeScale); // = _timeScale;
                 //     AudioTimeSync.Init(_songAudio.clip, _songAudio.time, 
                 //           AudioTimeSync.GetPrivateField<float>("_songTimeOffset") - AudioTimeSync.GetPrivateField<FloatSO>("_audioLatency").value, _timeScale);
-                Console.WriteLine("Called TimeScale");
+                Logger.Debug("Called TimeScale");
 
                 if (_songAudio != null) {
                     _songAudio.pitch = field;
@@ -199,6 +199,7 @@ namespace PracticePlugin.Models
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeeker = songSeeker;
             this._uiElementsCreator = uIElementsCreator;
+            songTimeInfoEntity.PracticeMode = gameplayCoreSceneSetupData.practiceSettings != null;
         }
 
         protected virtual void Dispose(bool disposing)

@@ -18,7 +18,7 @@ namespace PracticePlugin
                }
             catch (System.Exception ex)
             {
-                System.Console.WriteLine(ex.ToString());
+                System.Logger.Debug(ex.ToString());
             }
 
         }
