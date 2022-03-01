@@ -153,16 +153,16 @@ namespace PracticePlugin.Views
                 Logger.Debug("Canvas Null");
             }
 
-            var uiObj = new GameObject("PracticePlugin Seeker UI", typeof(RectTransform));
+            //var uiObj = new GameObject("PracticePlugin Seeker UI", typeof(RectTransform));
 
-            (uiObj.transform as RectTransform).anchorMin = new Vector2(0, 0);
-            (uiObj.transform as RectTransform).anchorMax = new Vector2(1, 1);
-            (uiObj.transform as RectTransform).sizeDelta = new Vector2(0, 0);
+            //(uiObj.transform as RectTransform).anchorMin = new Vector2(0, 0);
+            //(uiObj.transform as RectTransform).anchorMax = new Vector2(1, 1);
+            //(uiObj.transform as RectTransform).sizeDelta = new Vector2(0, 0);
             BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this.ResourceName), canvas.gameObject, this);
-            uiObj.transform.SetParent(canvas, false);
-            uiObj.transform.localScale = new Vector3(1, 1, 1);
-            uiObj.transform.localPosition = new Vector3(0f, -3f, 0f);
-            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._songSeeker.ResourceName), this.gameObject, this._songSeeker);
+            //uiObj.transform.SetParent(canvas, false);
+            //uiObj.transform.localScale = new Vector3(1, 1, 1);
+            //uiObj.transform.localPosition = new Vector3(0f, -3f, 0f);
+            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._songSeeker.ResourceName), canvas.gameObject, this._songSeeker);
         }
         private void SongSeeker_OnPointerDowned(PointerEventData obj)
         {
