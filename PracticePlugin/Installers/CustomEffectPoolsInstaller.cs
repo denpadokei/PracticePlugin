@@ -1,5 +1,4 @@
-﻿using Zenject;
-namespace PracticePlugin
+﻿namespace PracticePlugin
 {
     /*
     public class CustomEffectPoolsInstaller : EffectPoolsInstaller

@@ -1,14 +1,13 @@
 ﻿using System.Collections;
-using System.Linq;
 using UnityEngine;
 namespace PracticePlugin
 {
     public class NoFailGameEnergy : MonoBehaviour
     {
-        private GameEnergyUIPanel _gameEnergyUIPanel;
-        private GameEnergyCounter _gameEnergyCounter;
-        private Animator _levelFailedAnimator;
-        private GameObject _levelFailedGameObject;
+        private readonly GameEnergyUIPanel _gameEnergyUIPanel;
+        private readonly GameEnergyCounter _gameEnergyCounter;
+        private readonly Animator _levelFailedAnimator;
+        private readonly GameObject _levelFailedGameObject;
         public static bool limitLevelFail = false;
         public static bool hasFailed;
         private bool _isFailedVisible;
@@ -55,26 +54,25 @@ namespace PracticePlugin
         private IEnumerator LevelFailedRoutine()
         {
 
-            if (!(limitLevelFail == true && hasFailed == true))
-            {
-                _isFailedVisible = true;
+            if (!(limitLevelFail == true && hasFailed == true)) {
+                this._isFailedVisible = true;
 
-                _levelFailedGameObject.SetActive(false);
-                _levelFailedAnimator.enabled = true;
+                this._levelFailedGameObject.SetActive(false);
+                this._levelFailedAnimator.enabled = true;
                 yield return new WaitForSeconds(0.1f);
-                _levelFailedGameObject.SetActive(true);
+                this._levelFailedGameObject.SetActive(true);
                 var waitTime = Time.realtimeSinceStartup + 3;
-                while (Time.realtimeSinceStartup < waitTime)
-                {
-                    _gameEnergyCounter.ProcessEnergyChange(-1);
+                while (Time.realtimeSinceStartup < waitTime) {
+                    this._gameEnergyCounter.ProcessEnergyChange(-1);
                     yield return null;
                 }
-                _levelFailedGameObject.SetActive(false);
+                this._levelFailedGameObject.SetActive(false);
 
-                _gameEnergyCounter.ProcessEnergyChange(0.5f);
-                _isFailedVisible = false;
-                if (limitLevelFail == true)
+                this._gameEnergyCounter.ProcessEnergyChange(0.5f);
+                this._isFailedVisible = false;
+                if (limitLevelFail == true) {
                     hasFailed = true;
+                }
             }
 
         }

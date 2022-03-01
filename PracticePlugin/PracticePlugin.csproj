@@ -118,19 +118,19 @@
     <Compile Include="Installers\CustomEffectPoolsInstaller.cs" />
     <Compile Include="Installers\PlayerInstaller.cs" />
     <Compile Include="Installers\PracticeAppInstaller.cs" />
+    <Compile Include="Installers\PracticeMenuInstaller.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="LooperCursor.cs" />
-    <Compile Include="LooperUI.cs" />
+    <Compile Include="Views\LooperUI.cs" />
     <Compile Include="Models\AudioSpeedController.cs" />
     <Compile Include="Models\ResultViewTextController.cs" />
     <Compile Include="Models\SongTimeInfoEntity.cs" />
     <Compile Include="NoFailGameEnergy.cs" />
     <Compile Include="Plugin.cs" />
-    <Compile Include="PoolExtensions.cs" />
     <Compile Include="Views\PracticeUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReflectionUtil.cs" />
-    <Compile Include="SongSeeker.cs" />
+    <Compile Include="Views\SongSeeker.cs" />
     <Compile Include="SongSeekBeatmapHandler.cs" />
     <Compile Include="UIElementsCreator.cs" />
   </ItemGroup>
@@ -143,6 +143,8 @@
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="PracticePlugin.csproj.user" Condition="Exists('PracticePlugin.csproj.user')" />
+    <EmbeddedResource Include="Views\LooperUI.bsml" />
+    <EmbeddedResource Include="Views\SongSeeker.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

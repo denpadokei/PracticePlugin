@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PracticePlugin.Configuration;
+using System;
 using TMPro;
 using UnityEngine;
 using Zenject;
@@ -32,51 +29,56 @@ namespace PracticePlugin.Models
         #region // プライベートメソッド
         private void OnResultsViewController_didActivateEvent(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
         {
-            if (_showFailTextNext && _showTimeFailed) {
-                if (_failText == null)
-                    _failText = BeatSaberMarkupLanguage.BeatSaberUI.CreateText(_resultsViewController.rectTransform, _failTime, new Vector2(15f, -35f));
-                else
-                    _failText.text = _failTime;
-                _failText.richText = true;
+            if (this._songTimeInfoEntity.ShowFailTextNext && this._showTimeFailed) {
+                if (this._failText == null) {
+                    this._failText = BeatSaberMarkupLanguage.BeatSaberUI.CreateText(this._resultsViewController.rectTransform, this._songTimeInfoEntity.FailTimeText, new Vector2(15f, -35f));
+                }
+                else {
+                    this._failText.text = this._songTimeInfoEntity.FailTimeText;
+                }
+
+                this._failText.richText = true;
             }
             else {
-                if (_failText != null)
-                    _failText.text = "";
+                if (this._failText != null) {
+                    this._failText.text = "";
+                }
             }
-            _showFailTextNext = false;
+            this._songTimeInfoEntity.ShowFailTextNext = false;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private ResultsViewController _resultsViewController;
-        private bool _showFailTextNext;
         private bool _showTimeFailed;
-        private string _failTime;
         private TextMeshProUGUI _failText;
+        private SongTimeInfoEntity _songTimeInfoEntity;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(ResultsViewController resultsViewController)
+        public void Constractor(ResultsViewController resultsViewController, SongTimeInfoEntity songTimeInfoEntity)
         {
             this._resultsViewController = resultsViewController;
+            this._songTimeInfoEntity = songTimeInfoEntity;
             this._resultsViewController.didActivateEvent += this.OnResultsViewController_didActivateEvent;
             this._failText = this.gameObject.AddComponent<TextMeshProUGUI>();
+            this._showTimeFailed = PluginConfig.Instance.ShowTimeFailed;
         }
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue) {
+            if (!this._disposedValue) {
                 if (disposing) {
                     this._resultsViewController.didActivateEvent -= this.OnResultsViewController_didActivateEvent;
                     Destroy(this._failText);
                 }
-                _disposedValue = true;
+                this._disposedValue = true;
             }
         }
         public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
         #endregion

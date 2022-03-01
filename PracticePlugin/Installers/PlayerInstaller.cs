@@ -1,9 +1,5 @@
-﻿using PracticePlugin.Views;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PracticePlugin.Models;
+using PracticePlugin.Views;
 using Zenject;
 
 namespace PracticePlugin.Installers
@@ -16,6 +12,7 @@ namespace PracticePlugin.Installers
             this.Container.BindInterfacesAndSelfTo<LooperUI>().FromNewComponentAsViewController().AsCached();
             this.Container.BindInterfacesAndSelfTo<SongSeeker>().FromNewComponentAsViewController().AsCached();
             this.Container.BindInterfacesAndSelfTo<UIElementsCreator>().FromNewComponentOnNewGameObject().AsCached();
+            this.Container.BindInterfacesAndSelfTo<AudioSpeedController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
             this.Container.BindInterfacesAndSelfTo<SongSeekBeatmapHandler>().AsCached();
         }
     }

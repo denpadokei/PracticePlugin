@@ -1,0 +1,8 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+	>
+	<image id='root-object' anchor-pos-y='-25'>
+		<image id ='seek-bar'></image>
+		<image id='seek-cursor'></image>
+	</image>
+</bg>

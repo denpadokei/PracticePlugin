@@ -1,10 +1,9 @@
 ﻿using BS_Utils.Utilities;
 using IPA.Utilities;
+using PracticePlugin.Configuration;
+using PracticePlugin.Views;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Zenject;
 
@@ -14,25 +13,13 @@ namespace PracticePlugin.Models
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
-        public string failTime { get; private set; }
-        internal bool showFailTextNext { get; set; }
-        //       public static GameObject SpeedSettingsObject { get; private set; }
-        //       public static GameObject NjsSettingsObject { get; private set; }
-        //       public static GameObject SpawnOffsetSettingsObject { get; private set; }
-        internal bool startWithFullEnergy = false;
-        internal bool disablePitchCorrection = false;
-        internal bool adjustNJSWithSpeed = false;
-        internal float TimeScale
+        public float TimeScale
         {
-            get => _timeScale;
-            set => this.SetTimeScale(ref _timeScale, value);
+            get => this._timeScale;
+            set => this.SetTimeScale(ref this._timeScale, value);
         }
-
-        private static float _timeScale = 1;
-
-        public static bool PracticeMode { get; private set; }
-
-        public static bool PlayingNewSong { get; private set; }
+        private float _timeScale = 1;
+        public bool PlayingNewSong { get; private set; }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // コマンド
@@ -47,51 +34,45 @@ namespace PracticePlugin.Models
         #region // パブリックメソッド
         public void Initialize()
         {
-            //var levelData = BS_Utils.Plugin.LevelData;
-            //if (levelData.IsSet == false) return;
             BSEvents.levelFailed += this.BSEvents_levelFailed;
 
-            if (_songTimeInfoEntity.LastLevelID != _gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID &&
-                !string.IsNullOrEmpty(_songTimeInfoEntity.LastLevelID)) {
-                PlayingNewSong = true;
+            if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID &&
+                !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
+                this.PlayingNewSong = true;
                 // TimeScale = 1;
-                _songTimeInfoEntity.LastLevelID = _gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
+                this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
             }
             else {
-                PlayingNewSong = false;
+                this.PlayingNewSong = false;
             }
-
-
-            _songTimeInfoEntity.LastLevelID = _gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
-            //_mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().LastOrDefault();
-            //AudioTimeSync = Resources.FindObjectsOfTypeAll<AudioTimeSyncController>().LastOrDefault();
-            _songAudio = _audioTimeSyncController.GetPrivateField<AudioSource>("_audioSource");
-
-            PracticeMode = this._gameplayCoreSceneSetupData.practiceSettings != null;
-
-
-            if (!PracticeMode) {
-                _timeScale = Mathf.Clamp(TimeScale, 1, SpeedMaxSize);
+            this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
+            if (!this._songTimeInfoEntity.PracticeMode) {
+                this._timeScale = Mathf.Clamp(this.TimeScale, 1, SpeedMaxSize);
             }
-            if (PracticeMode) {
-                if (_gameplayCoreSceneSetupData.practiceSettings.songSpeedMul != 1f)
-                    _timeScale = _gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
-                else
-                    _timeScale = _gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
+            if (this._songTimeInfoEntity.PracticeMode) {
+                if (this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul != 1f) {
+                    this._timeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
+                }
+                else {
+                    this._timeScale = this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
+                }
             }
         }
 
         public void Update()
         {
-            if (_uiElementsCreator == null || _songSeeker == null) return;
-            _songSeeker.OnUpdate();
+            if (this._uiElementsCreator == null || this._songSeeker == null) {
+                return;
+            }
+
+            this._songSeeker.OnUpdate();
         }
 
         private void BSEvents_levelFailed(StandardLevelScenesTransitionSetupDataSO arg1, LevelCompletionResults results)
         {
-            float endTime = results.endSongTime;
-            float length = _audioTimeSyncController.songTime;
-            _songTimeInfoEntity.FailTimeText = $"<#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
+            var endTime = results.endSongTime;
+            var length = this._audioTimeSyncController.songTime;
+            this._songTimeInfoEntity.FailTimeText = $"<#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
             this._songTimeInfoEntity.ShowFailTextNext = true;
         }
         #endregion
@@ -99,25 +80,35 @@ namespace PracticePlugin.Models
         #region // プライベートメソッド
         private void SetTimeScale(ref float field, float timeScale)
         {
+            if (field == timeScale) {
+                return;
+            }
             field = timeScale;
-            if (!_audioTimeSyncController) return;
-            if (!_spawnController) return;
-            AudioTimeSyncController.InitData initData = this._audioTimeSyncController.GetPrivateField<AudioTimeSyncController.InitData>("_initData");
-            AudioTimeSyncController.InitData newInitData = new AudioTimeSyncController.InitData(initData.audioClip,
+            if (!this._audioTimeSyncController) {
+                return;
+            }
+
+            if (!this._spawnController) {
+                return;
+            }
+
+            var initData = this._audioTimeSyncController.GetPrivateField<AudioTimeSyncController.InitData>("_initData");
+            var newInitData = new AudioTimeSyncController.InitData(initData.audioClip,
                 this._audioTimeSyncController.songTime, initData.songTimeOffset, field);
             this._audioTimeSyncController.SetPrivateField("_initData", newInitData);
             //Chipmunk Removal as per base game
-            if (!disablePitchCorrection) {
-                if (field == 1f)
-                    _mixer.musicPitch = 1;
-                else
-                    _mixer.musicPitch = 1f / field;
+            if (!PluginConfig.Instance.DisablePitchCorrection) {
+                if (field == 1f) {
+                    this._mixer.musicPitch = 1;
+                }
+                else {
+                    this._mixer.musicPitch = 1f / field;
+                }
             }
             else {
-                _mixer.musicPitch = 1f;
+                this._mixer.musicPitch = 1f;
             }
             ResetTimeSync(this._audioTimeSyncController, field, newInitData);
-            //   AudioTimeSync.StartSong();
 #if false
             //       AudioTimeSync.SetPrivateField("_timeScale", value);
             //        AudioTimeSync.Init(_songAudio.clip, _songAudio.time, AudioTimeSync.GetPrivateField<float>("_songTimeOffset"), value);
@@ -183,7 +174,6 @@ namespace PracticePlugin.Models
         public AudioTimeSyncController _audioTimeSyncController;
         private AudioManagerSO _mixer;
         private SongTimeInfoEntity _songTimeInfoEntity;
-        private AudioSource _songAudio;
         private UIElementsCreator _uiElementsCreator;
         private SongSeeker _songSeeker;
         private bool _disposedValue;
@@ -191,7 +181,7 @@ namespace PracticePlugin.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public AudioSpeedController(SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeeker songSeeker, UIElementsCreator uIElementsCreator)
+        public void Constractor(SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeeker songSeeker, UIElementsCreator uIElementsCreator)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
@@ -199,20 +189,22 @@ namespace PracticePlugin.Models
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeeker = songSeeker;
             this._uiElementsCreator = uIElementsCreator;
-            songTimeInfoEntity.PracticeMode = gameplayCoreSceneSetupData.practiceSettings != null;
+            // メモリリークしそう
+            this._mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().LastOrDefault();
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue) {
+            if (!this._disposedValue) {
                 if (disposing) {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)
                     BSEvents.levelFailed -= this.BSEvents_levelFailed;
+                    this._mixer = null;
                 }
 
                 // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、ファイナライザーをオーバーライドします
                 // TODO: 大きなフィールドを null に設定します
-                _disposedValue = true;
+                this._disposedValue = true;
             }
         }
 
@@ -226,7 +218,7 @@ namespace PracticePlugin.Models
         public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
         #endregion
