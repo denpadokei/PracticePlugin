@@ -1,6 +1,7 @@
 ﻿using BeatSaberMarkupLanguage;
 using HMUI;
 using IPA.Utilities;
+using PracticePlugin.Models;
 using System;
 using TMPro;
 using UnityEngine;
@@ -16,7 +17,6 @@ namespace PracticePlugin.Views
         private AudioTimeSyncController _audioTimeSyncController;
         private AudioSource _songAudioSource;
         private SongSeekBeatmapHandler _songSeekBeatmapHandler;
-        private PauseController _pauseController;
         private ImageView _seekBackg;
         private ImageView _seekBar;
         private ImageView _seekCursor;
@@ -43,11 +43,10 @@ namespace PracticePlugin.Views
         private const float LooperUITopMargin = -5f;
         internal int _startTimeSamples;
         [Inject]
-        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, PauseController pauseController, LooperUI looperUI)
+        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeekBeatmapHandler = songSeekBeatmapHandler;
-            this._pauseController = pauseController;
             this._looperUI = looperUI;
         }
         public void SetPlaybackPosition(float value, float start, float end)
@@ -204,7 +203,6 @@ namespace PracticePlugin.Views
             this._songAudioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._songAudioSource.clip.samples, this.PlaybackPosition));
             this._songAudioSource.time = this._songAudioSource.time - Mathf.Min(AheadTime, this._songAudioSource.time);
             this._songSeekBeatmapHandler.OnSongTimeChanged(this._songAudioSource.time, Mathf.Min(AheadTime, this._songAudioSource.time));
-            NoFailGameEnergy.hasFailed = false;
         }
 
         private void UpdateCurrentTimeText(float playbackPos)

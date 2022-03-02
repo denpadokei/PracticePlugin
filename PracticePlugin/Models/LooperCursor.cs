@@ -1,9 +1,8 @@
-﻿using HMUI;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace PracticePlugin
+namespace PracticePlugin.Models
 {
     public class LooperCursor : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
     {

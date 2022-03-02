@@ -10,6 +10,6 @@ namespace PracticePlugin.Configuration
         public virtual bool StartWithFullEnergy { get; set; } = false;
         public virtual bool ShowTimeFailed { get; set; } = true;
         public virtual bool DisablePitchCorrection { get; set; } = false;
-        public virtual bool AdjustNJSWithSpeed { get; set; } = false;
+        //public virtual bool AdjustNJSWithSpeed { get; set; } = false;
     }
 }

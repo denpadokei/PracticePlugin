@@ -1,13 +1,12 @@
 ﻿using BeatSaberMarkupLanguage;
 using IPA.Utilities;
-using PracticePlugin.Models;
 using PracticePlugin.Views;
 using System;
 using System.Reflection;
 using UnityEngine;
 using Zenject;
 
-namespace PracticePlugin
+namespace PracticePlugin.Models
 {
     public class UIElementsCreator : MonoBehaviour, IInitializable
     {
@@ -22,13 +21,14 @@ namespace PracticePlugin
         internal static float _newTimeScale { get; private set; } = 1f;
 
         [Inject]
-        public void Constractor(BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity, SongSeeker songSeeker, AudioTimeSyncController audioTimeSyncController, PracticeUI practiceUI)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity, SongSeeker songSeeker, AudioTimeSyncController audioTimeSyncController, PracticeUI practiceUI)
         {
             this._spawnController = beatmapObjectSpawnController;
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._songSeeker = songSeeker;
             this._audioTimeSyncController = audioTimeSyncController;
             this._practiceUI = practiceUI;
+            songTimeInfoEntity.PracticeMode = gameplayCoreSceneSetupData.practiceSettings != null;
         }
         public void Initialize()
         {
@@ -37,7 +37,8 @@ namespace PracticePlugin
                 var canvas = GameObject.Find("PauseMenu").transform.Find("Wrapper").transform.Find("MenuWrapper").transform.Find("Canvas");
 
                 if (canvas == null) {
-                    Console.WriteLine("Canvas Null");
+                    Logger.Debug("Canvas Null");
+                    return;
                 }
                 var uiObj = new GameObject("PracticePlugin Seeker UI", typeof(RectTransform));
 
@@ -46,12 +47,10 @@ namespace PracticePlugin
                 (uiObj.transform as RectTransform).sizeDelta = new Vector2(0, 0);
                 this.transform.SetParent(uiObj.transform as RectTransform, false);
                 BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._practiceUI.ResourceName), canvas.gameObject, this._practiceUI);
-                _practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
+                this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
                 uiObj.transform.SetParent(canvas, false);
                 uiObj.transform.localScale = new Vector3(1, 1, 1);
                 uiObj.transform.localPosition = new Vector3(0f, -3f, 0f);
-                //var seekerObj = new GameObject("Song Seeker");
-                //seekerObj.transform.SetParent(this.transform as RectTransform, false);
                 this._songSeeker.gameObject.transform.SetParent(canvas, false);
             }
         }
@@ -59,7 +58,7 @@ namespace PracticePlugin
         private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(PracticeUI.offset) || e.PropertyName == nameof(PracticeUI.njs)) {
-                this.UpdateSpawnMovementData(_practiceUI.njs, _practiceUI.offset);
+                this.UpdateSpawnMovementData(this._practiceUI.njs, this._practiceUI.offset);
             }
         }
 
@@ -102,7 +101,7 @@ namespace PracticePlugin
 
         public void OnDestroy()
         {
-            _practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
+            this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
         }
         private void SpeedControllerOnValueChangedEvent(float timeScale)
         {

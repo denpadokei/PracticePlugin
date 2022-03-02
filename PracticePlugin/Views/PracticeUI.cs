@@ -85,7 +85,7 @@ namespace PracticePlugin.Views
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             this._gameEnergyCounter = gameEnergyCounter;
-            songTimeInfoEntity.PracticeMode = gameplayCoreSceneSetupData.practiceSettings != null;
+
             this._songTimeInfoEntity = songTimeInfoEntity;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
                 this.speed = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;

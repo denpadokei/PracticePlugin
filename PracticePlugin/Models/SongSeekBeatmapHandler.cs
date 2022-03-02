@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Zenject;
 
-namespace PracticePlugin
+namespace PracticePlugin.Models
 {
     public class SongSeekBeatmapHandler
     {
