@@ -11,6 +11,7 @@ using Zenject;
 
 namespace PracticePlugin.Views
 {
+    [HotReload]
     public class PracticeUI : BSMLResourceViewController, IInitializable
     {
         public override string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name, "bsml");

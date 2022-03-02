@@ -186,7 +186,7 @@ namespace PracticePlugin.Models
         public const int NjstepSize = 1;
         private BeatmapObjectSpawnController _spawnController;
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
-        public AudioTimeSyncController _audioTimeSyncController;
+        private AudioTimeSyncController _audioTimeSyncController;
         private AudioSource _audioSource;
         private AudioManagerSO _mixer;
         private SongTimeInfoEntity _songTimeInfoEntity;
