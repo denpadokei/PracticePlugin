@@ -184,8 +184,8 @@ namespace PracticePlugin.Models
         public void ApplyPlaybackPosition()
         {
             this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
-            this._audioSource.time -= Mathf.Min(AheadTime, this._audioSource.time);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(AheadTime, this._audioSource.time));
+            this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -206,7 +206,7 @@ namespace PracticePlugin.Models
         private SongSeeker _songSeeker;
         private PracticeUI _practiceUI;
         private bool _disposedValue;
-        private const float AheadTime = 1f;
+        private const float s_aheadTime = 1f;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄

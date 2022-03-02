@@ -23,22 +23,22 @@ namespace PracticePlugin.Views
         private LooperUI _looperUI;
         private TMP_Text _currentTime;
         private TMP_Text _timeLength;
-        private const float AheadTime = 1f;
+        private const float s_aheadTime = 1f;
 
         public static readonly Vector2 SeekBarSize = new Vector2(100, 2);
         public static readonly float HalfSeekBarSize = SeekBarSize.x / 2;
 
-        private static readonly Vector2 ParentSize = new Vector2(100, 4);
-        private static readonly Color BackgroundColor = new Color(0, 0, 0, 0.25f);
-        private static readonly Color ForegroundColor = new Color(0.8f, 0.8f, 0.8f, 1f);
+        private static readonly Vector2 s_parentSize = new Vector2(100, 4);
+        private static readonly Color s_backgroundColor = new Color(0, 0, 0, 0.25f);
+        private static readonly Color s_foregroundColor = new Color(0.8f, 0.8f, 0.8f, 1f);
 
-        private static readonly Vector2 SeekCursorSize = new Vector2(4, 4);
-        private static readonly Color SeekCursorColor = new Color(1, 1, 1, 1f);
+        private static readonly Vector2 s_seekCursorSize = new Vector2(4, 4);
+        private static readonly Color s_seekCursorColor = new Color(1, 1, 1, 1f);
 
-        private const float StickToLooperCursorDistance = 0.02f;
-        private bool init = false;
+        private const float s_stickToLooperCursorDistance = 0.02f;
+        private bool _init = false;
 
-        private const float LooperUITopMargin = -5f;
+        private const float s_looperUITopMargin = -5f;
         internal int _startTimeSamples;
         [Inject]
         public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI)
@@ -62,7 +62,7 @@ namespace PracticePlugin.Views
             var rectTransform = this.transform as RectTransform;
             rectTransform.anchorMin = Vector2.right * 0.5f;
             rectTransform.anchorMax = Vector2.right * 0.5f;
-            rectTransform.sizeDelta = ParentSize;
+            rectTransform.sizeDelta = s_parentSize;
             rectTransform.anchoredPosition = new Vector2(0, 13);
 
             this._seekBackg = new GameObject("Background").AddComponent<ImageView>();
@@ -72,7 +72,7 @@ namespace PracticePlugin.Views
             rectTransform.anchoredPosition = new Vector2(0, -1);
             this._seekBackg.sprite = sprite;
             this._seekBackg.type = Image.Type.Simple;
-            this._seekBackg.color = BackgroundColor;
+            this._seekBackg.color = s_backgroundColor;
             this._seekBackg.material = Utilities.ImageResources.NoGlowMat;
 
             this._seekBar = new GameObject("Seek Bar").AddComponent<ImageView>();
@@ -83,7 +83,7 @@ namespace PracticePlugin.Views
             this._seekBar.sprite = sprite;
             this._seekBar.type = Image.Type.Filled;
             this._seekBar.fillMethod = Image.FillMethod.Horizontal;
-            this._seekBar.color = ForegroundColor;
+            this._seekBar.color = s_foregroundColor;
             this._seekBar.material = Utilities.ImageResources.NoGlowMat;
 
             this._seekCursor = new GameObject("Seek Cursor").AddComponent<ImageView>();
@@ -91,11 +91,11 @@ namespace PracticePlugin.Views
             rectTransform.SetParent(this._seekBar.transform, false);
             rectTransform.anchorMin = Vector2.up * 0.5f;
             rectTransform.anchorMax = Vector2.up * 0.5f;
-            rectTransform.sizeDelta = SeekCursorSize;
+            rectTransform.sizeDelta = s_seekCursorSize;
 
             this._seekCursor.sprite = sprite;
             this._seekCursor.type = Image.Type.Simple;
-            this._seekCursor.color = SeekCursorColor;
+            this._seekCursor.color = s_seekCursorColor;
             this._seekCursor.material = Utilities.ImageResources.NoGlowMat;
             this._currentTime = BeatSaberUI.CreateText(this.GetComponent<RectTransform>(), "0:00", new Vector2(-83f, -1f));
             this._currentTime.fontSize = 5f;
@@ -107,7 +107,7 @@ namespace PracticePlugin.Views
             this._looperUI.gameObject.transform.SetParent(this._seekBar.rectTransform, false);
             rectTransform = this._looperUI.transform as RectTransform;
             rectTransform.sizeDelta = SeekBarSize;
-            rectTransform.anchoredPosition = new Vector2(0, LooperUITopMargin - 2f);
+            rectTransform.anchoredPosition = new Vector2(0, s_looperUITopMargin - 2f);
             this._looperUI.OnDragEndEvent += this.LooperUIOnOnDragEndEvent;
             if (this._looperUI.StartTime != 0) {
                 this.PlaybackPosition = this._looperUI.StartTime;
@@ -134,7 +134,7 @@ namespace PracticePlugin.Views
 
         private void OnDisable()
         {
-            this.init = true;
+            this._init = true;
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
             }
@@ -153,7 +153,7 @@ namespace PracticePlugin.Views
             if (this._looperUI == null || this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
             }
-            if (!this.init) {
+            if (!this._init) {
                 this.PlaybackPosition = (float)this._songAudioSource.timeSamples / this._songAudioSource.clip.samples;
             }
             this._looperUI.UpdateCursorPosition(this.PlaybackPosition);
@@ -199,8 +199,8 @@ namespace PracticePlugin.Views
         public void ApplyPlaybackPosition()
         {
             this._songAudioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._songAudioSource.clip.samples, this.PlaybackPosition));
-            this._songAudioSource.time -= Mathf.Min(AheadTime, this._songAudioSource.time);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(this._songAudioSource.time, Mathf.Min(AheadTime, this._songAudioSource.time));
+            this._songAudioSource.time -= Mathf.Min(s_aheadTime, this._songAudioSource.time);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(this._songAudioSource.time, Mathf.Min(s_aheadTime, this._songAudioSource.time));
         }
 
         private void UpdateCurrentTimeText(float playbackPos)
@@ -210,10 +210,10 @@ namespace PracticePlugin.Views
 
         private void CheckLooperCursorStick()
         {
-            if (Mathf.Abs(this.PlaybackPosition - this._looperUI.StartTime) <= StickToLooperCursorDistance) {
+            if (Mathf.Abs(this.PlaybackPosition - this._looperUI.StartTime) <= s_stickToLooperCursorDistance) {
                 this.PlaybackPosition = this._looperUI.StartTime;
             }
-            else if (Mathf.Abs(this.PlaybackPosition - this._looperUI.EndTime) <= StickToLooperCursorDistance) {
+            else if (Mathf.Abs(this.PlaybackPosition - this._looperUI.EndTime) <= s_stickToLooperCursorDistance) {
                 this.PlaybackPosition = this._looperUI.EndTime;
             }
 

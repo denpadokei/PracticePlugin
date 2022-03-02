@@ -10,8 +10,8 @@ namespace PracticePlugin.Models
     public class UIElementsCreator : MonoBehaviour, IInitializable
     {
         private SongSeeker _songSeeker;
-        internal static float defaultNJS;
-        internal static float defaultOffset;
+        internal static float s_defaultNJS;
+        internal static float s_defaultOffset;
         private GameEnergyCounter _gameEnergyCounter;
         private SongTimeInfoEntity _songTimeInfoEntity;
         public BeatmapObjectSpawnController _spawnController;

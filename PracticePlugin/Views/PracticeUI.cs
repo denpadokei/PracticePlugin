@@ -40,19 +40,19 @@ namespace PracticePlugin.Views
         }
 
         [UIAction("speedFormatter")]
-        private string speedForValue(float value)
+        private string SpeedForValue(float value)
         {
             return $"{value}%";
         }
         [UIAction("njsFormatter")]
-        private string njsForValue(float value)
+        private string NjsForValue(float value)
         {
-            return value == UIElementsCreator.defaultNJS ? $"<u>{value}</u>" : $"{value}";
+            return value == UIElementsCreator.s_defaultNJS ? $"<u>{value}</u>" : $"{value}";
         }
         [UIAction("spawnOffsetFormatter")]
-        private string offsetForValue(float value)
+        private string OffsetForValue(float value)
         {
-            return value == UIElementsCreator.defaultOffset ? $"<u>{value:F2}</u>" : $"{value:F2}";
+            return value == UIElementsCreator.s_defaultOffset ? $"<u>{value:F2}</u>" : $"{value:F2}";
         }
 
         [UIAction("#post-parse")]

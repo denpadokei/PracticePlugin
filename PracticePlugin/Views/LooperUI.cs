@@ -12,23 +12,22 @@ namespace PracticePlugin.Views
     public class LooperUI : MonoBehaviour, IInitializable
     {
         public float StartTime => Mathf.InverseLerp(0, SongSeeker.SeekBarSize.x, this._startCursor.Position);
-
         public float EndTime => Mathf.InverseLerp(0, SongSeeker.SeekBarSize.x, this._endCursor.Position);
 
         public event Action OnDragEndEvent;
 
-        private static readonly Vector2 CursorSize = new Vector2(3, 3);
+        private static readonly Vector2 s_cursorSize = new Vector2(3, 3);
 
-        private static readonly Color StartColor = new Color(0.15f, 0.35f, 0.8f, 0.75f);
-        private static readonly Color EndColor = new Color(0.85f, 0.12f, 0.25f, 0.75f);
-        private static readonly Color LineDurationColor = new Color(1, 1, 1, 0.4f);
+        private static readonly Color s_startColor = new Color(0.15f, 0.35f, 0.8f, 0.75f);
+        private static readonly Color s_endColor = new Color(0.85f, 0.12f, 0.25f, 0.75f);
+        private static readonly Color s_lineDurationColor = new Color(1, 1, 1, 0.4f);
 
-        private const float LineDurationWidth = 1f;
-        private const float MinCursorDistance = 4f;
-        private const float StickToSeekerCursorDistance = 2f;
+        private const float s_lineDurationWidth = 1f;
+        private const float s_minCursorDistance = 4f;
+        private const float s_stickToSeekerCursorDistance = 2f;
 
-        private static float _prevStartTime;
-        private static float _prevEndTime = 1f;
+        private static float s_prevStartTime;
+        private static float s_prevEndTime = 1f;
         private ImageView _lineDuration;
 
         private LooperCursor _startCursor;
@@ -47,8 +46,8 @@ namespace PracticePlugin.Views
             Logger.Debug("Initialize");
             this.gameObject.AddComponent<RectTransform>();
             if (this._songTimeInfo.PlayingNewSong) {
-                _prevStartTime = 0;
-                _prevEndTime = 1;
+                s_prevStartTime = 0;
+                s_prevEndTime = 1;
             }
             var tex = Texture2D.whiteTexture;
             var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);
@@ -71,7 +70,7 @@ namespace PracticePlugin.Views
             rectTransform.sizeDelta = Vector2.zero;
             this._lineDuration.sprite = sprite;
             this._lineDuration.type = Image.Type.Simple;
-            this._lineDuration.color = LineDurationColor;
+            this._lineDuration.color = s_lineDurationColor;
             this._lineDuration.material = Utilities.ImageResources.NoGlowMat;
 
             var startCursorImage = new GameObject("Start Cursor").AddComponent<ImageView>();
@@ -79,34 +78,34 @@ namespace PracticePlugin.Views
             rectTransform.SetParent(this.transform, false);
             rectTransform.anchorMin = Vector2.up * 0.5f;
             rectTransform.anchorMax = Vector2.up * 0.5f;
-            rectTransform.sizeDelta = CursorSize;
+            rectTransform.sizeDelta = s_cursorSize;
             rectTransform.localEulerAngles = new Vector3(0, 0, 45);
             startCursorImage.sprite = sprite;
             startCursorImage.type = Image.Type.Simple;
-            startCursorImage.color = StartColor;
+            startCursorImage.color = s_startColor;
             startCursorImage.material = Utilities.ImageResources.NoGlowMat;
 
             this._startCursor = startCursorImage.gameObject.AddComponent<LooperCursor>();
             this._startCursor.BeginDragEvent += this.CursorOnBeginDragEvent;
             this._startCursor.EndDragEvent += this.CursorOnEndDragEvent;
-            this._startCursor.Position = Mathf.Lerp(0, SongSeeker.SeekBarSize.x, _prevStartTime);
+            this._startCursor.Position = Mathf.Lerp(0, SongSeeker.SeekBarSize.x, s_prevStartTime);
 
             var endCursorImage = new GameObject("End Cursor").AddComponent<ImageView>();
             rectTransform = endCursorImage.rectTransform;
             rectTransform.SetParent(this.transform, false);
             rectTransform.anchorMin = Vector2.up * 0.5f;
             rectTransform.anchorMax = Vector2.up * 0.5f;
-            rectTransform.sizeDelta = CursorSize;
+            rectTransform.sizeDelta = s_cursorSize;
             rectTransform.localEulerAngles = new Vector3(0, 0, 45);
             endCursorImage.sprite = sprite;
             endCursorImage.type = Image.Type.Simple;
-            endCursorImage.color = EndColor;
+            endCursorImage.color = s_endColor;
             endCursorImage.material = Utilities.ImageResources.NoGlowMat;
 
             this._endCursor = endCursorImage.gameObject.AddComponent<LooperCursor>();
             this._endCursor.BeginDragEvent += this.CursorOnBeginDragEvent;
             this._endCursor.EndDragEvent += this.CursorOnEndDragEvent;
-            this._endCursor.Position = Mathf.Lerp(0, SongSeeker.SeekBarSize.x, _prevEndTime);
+            this._endCursor.Position = Mathf.Lerp(0, SongSeeker.SeekBarSize.x, s_prevEndTime);
 
             this._startCursor.Init(LooperCursor.Type.Start);
             this._endCursor.Init(LooperCursor.Type.End);
@@ -132,19 +131,19 @@ namespace PracticePlugin.Views
                 var newPos = Mathf.Lerp(0, SongSeeker.SeekBarSize.x, Mathf.InverseLerp(-1, 1, Mathf.Clamp(eventData.position.x, -1f, 1f)));
 
                 var seekerPos = playbackPosition;
-                if (Mathf.Abs(newPos - seekerPos) <= StickToSeekerCursorDistance) {
+                if (Mathf.Abs(newPos - seekerPos) <= s_stickToSeekerCursorDistance) {
                     newPos = seekerPos;
                 }
 
                 if (this._draggingCursor.CursorType == LooperCursor.Type.Start) {
-                    this._draggingCursor.Position = Mathf.Clamp(newPos, 0, this._endCursor.Position - MinCursorDistance);
+                    this._draggingCursor.Position = Mathf.Clamp(newPos, 0, this._endCursor.Position - s_minCursorDistance);
                 }
                 else {
-                    this._draggingCursor.Position = Mathf.Clamp(newPos, this._startCursor.Position + MinCursorDistance,
+                    this._draggingCursor.Position = Mathf.Clamp(newPos, this._startCursor.Position + s_minCursorDistance,
                         SongSeeker.SeekBarSize.x);
                 }
             }
-            this._lineDuration.rectTransform.sizeDelta = new Vector2(this._endCursor.Position - this._startCursor.Position, LineDurationWidth);
+            this._lineDuration.rectTransform.sizeDelta = new Vector2(this._endCursor.Position - this._startCursor.Position, s_lineDurationWidth);
             this._lineDuration.rectTransform.anchoredPosition = new Vector2((this._startCursor.Position + this._endCursor.Position) / 2, 0);
         }
 
@@ -156,8 +155,8 @@ namespace PracticePlugin.Views
             this._endCursor.BeginDragEvent -= this.CursorOnBeginDragEvent;
             this._endCursor.EndDragEvent -= this.CursorOnEndDragEvent;
 
-            _prevStartTime = this.StartTime;
-            _prevEndTime = this.EndTime;
+            s_prevStartTime = this.StartTime;
+            s_prevEndTime = this.EndTime;
         }
     }
 }
