@@ -11,15 +11,13 @@ namespace PracticePlugin.Models
         public SongSeekBeatmapHandler(
             AudioTimeSyncController audioTimeSyncController,
             BeatmapObjectCallbackController beatmapObjectCallbackController,
-            BeatmapObjectSpawnController beatmapObjectSpawnController,
-            BeatmapObjectExecutionRatingsRecorder beatmapObjectExecutionRatingsRecorder,
             NoteCutSoundEffectManager noteCutSoundEffectManager,
             BasicBeatmapObjectManager beatmapObjectManager)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._beatmapObjectCallbackController = beatmapObjectCallbackController;
-            this._beatmapObjectSpawnController = beatmapObjectSpawnController;
-            this._beatmapObjectExecutionRatingsRecorder = beatmapObjectExecutionRatingsRecorder;
+            //this._beatmapObjectSpawnController = beatmapObjectSpawnController;
+            //this._beatmapObjectExecutionRatingsRecorder = beatmapObjectExecutionRatingsRecorder;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
             this._beatmapObjectManager = beatmapObjectManager;
             this._callbackList = this._beatmapObjectCallbackController
@@ -27,24 +25,24 @@ namespace PracticePlugin.Models
                         "_beatmapObjectCallbackData");
             this._beatmapData = this._beatmapObjectCallbackController
                 .GetPrivateField<BeatmapData>("_beatmapData");
-            this._notePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<GameNoteController>>("_gameNotePoolContainer");
-            this._bombNotePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<BombNoteController>>("_bombNotePoolContainer");
-            this._obstaclePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<ObstacleController>>("_obstaclePoolContainer");
+            //this._notePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<GameNoteController>>("_gameNotePoolContainer");
+            //this._bombNotePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<BombNoteController>>("_bombNotePoolContainer");
+            //this._obstaclePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<ObstacleController>>("_obstaclePoolContainer");
         }
 
         private List<BeatmapObjectCallbackData> CallbackList => this._callbackList;
 
         private readonly List<BeatmapObjectCallbackData> _callbackList;
         private readonly BeatmapObjectCallbackController _beatmapObjectCallbackController;
-        private readonly BeatmapObjectSpawnController _beatmapObjectSpawnController;
+        //private readonly BeatmapObjectSpawnController _beatmapObjectSpawnController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
-        private readonly BeatmapObjectExecutionRatingsRecorder _beatmapObjectExecutionRatingsRecorder;
+        //private readonly BeatmapObjectExecutionRatingsRecorder _beatmapObjectExecutionRatingsRecorder;
 
-        private readonly MemoryPoolContainer<GameNoteController> _notePool;
-        private readonly MemoryPoolContainer<BombNoteController> _bombNotePool;
-        private readonly MemoryPoolContainer<ObstacleController> _obstaclePool;
+        //private readonly MemoryPoolContainer<GameNoteController> _notePool;
+        //private readonly MemoryPoolContainer<BombNoteController> _bombNotePool;
+        //private readonly MemoryPoolContainer<ObstacleController> _obstaclePool;
 
         private BeatmapData _beatmapData;
 

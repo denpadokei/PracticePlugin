@@ -6,8 +6,6 @@
         public string FailTimeText { get; set; }
         public bool ShowFailTextNext { get; set; }
         public bool PracticeMode { get; set; }
-        public float TimeScale { get; set; }
-        public bool adjustNJSWithSpeed { get; set; }
         public bool PlayingNewSong { get; set; }
     }
 }

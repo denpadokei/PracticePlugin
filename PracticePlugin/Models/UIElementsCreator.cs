@@ -1,8 +1,6 @@
 ﻿using BeatSaberMarkupLanguage;
-using IPA.Utilities;
 using PracticePlugin.Configuration;
 using PracticePlugin.Views;
-using System;
 using System.Reflection;
 using UnityEngine;
 using Zenject;

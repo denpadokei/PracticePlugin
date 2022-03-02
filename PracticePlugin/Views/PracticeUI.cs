@@ -1,9 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
-using PracticePlugin.Configuration;
 using PracticePlugin.Models;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -24,7 +22,7 @@ namespace PracticePlugin.Views
             get => this._speed;
             set => this.SetProperty(ref this._speed, value);
         }
-        
+
         private float _njs;
         [UIValue("njs")]
         public float NJS
@@ -32,7 +30,7 @@ namespace PracticePlugin.Views
             get => this._njs;
             set => this.SetProperty(ref this._njs, value);
         }
-        
+
         private float _offset;
         [UIValue("offset")]
         public float Offset
@@ -54,7 +52,7 @@ namespace PracticePlugin.Views
         [UIAction("spawnOffsetFormatter")]
         private string offsetForValue(float value)
         {
-            return value == UIElementsCreator.defaultOffset ? $"<u>{value.ToString("F2")}</u>" : $"{value.ToString("F2")}";
+            return value == UIElementsCreator.defaultOffset ? $"<u>{value:F2}</u>" : $"{value:F2}";
         }
 
         [UIAction("#post-parse")]

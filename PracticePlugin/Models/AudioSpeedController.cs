@@ -13,13 +13,12 @@ namespace PracticePlugin.Models
     {
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
+        private float _timeScale = 1;
         public float TimeScale
         {
             get => this._timeScale;
             set => this.SetTimeScale(ref this._timeScale, value);
         }
-        private float _timeScale = 1;
-        public bool PlayingNewSong { get; private set; }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // コマンド
@@ -34,22 +33,14 @@ namespace PracticePlugin.Models
         #region // パブリックメソッド
         public void Initialize()
         {
-            if (!_songTimeInfoEntity.PracticeMode) {
+            if (!this._songTimeInfoEntity.PracticeMode) {
                 return;
             }
             this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
             BSEvents.levelFailed += this.BSEvents_levelFailed;
 
-            if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID &&
-                !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
-                this.PlayingNewSong = true;
-                // TimeScale = 1;
-                this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
-            }
-            else {
-                this.PlayingNewSong = false;
-            }
+
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
             if (!this._songTimeInfoEntity.PracticeMode) {
                 this.TimeScale = Mathf.Clamp(this.TimeScale, 1, SpeedMaxSize);
@@ -77,7 +68,6 @@ namespace PracticePlugin.Models
         }
         private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Logger.Debug("PracticeUI_PropertyChanged");
             if (e.PropertyName == nameof(PracticeUI.Offset) || e.PropertyName == nameof(PracticeUI.NJS)) {
                 this.UpdateSpawnMovementData(this._practiceUI.NJS, this._practiceUI.Offset);
             }
@@ -110,7 +100,6 @@ namespace PracticePlugin.Models
             if (!this._spawnController) {
                 return;
             }
-
             var initData = this._audioTimeSyncController.GetPrivateField<AudioTimeSyncController.InitData>("_initData");
             var newInitData = new AudioTimeSyncController.InitData(
                 initData.audioClip,
@@ -195,7 +184,7 @@ namespace PracticePlugin.Models
         public void ApplyPlaybackPosition()
         {
             this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
-            this._audioSource.time = this._audioSource.time - Mathf.Min(AheadTime, this._audioSource.time);
+            this._audioSource.time -= Mathf.Min(AheadTime, this._audioSource.time);
             this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(AheadTime, this._audioSource.time));
         }
         #endregion
@@ -234,6 +223,15 @@ namespace PracticePlugin.Models
             this._songSeeker = songSeeker;
             // メモリリークしそう
             this._mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().SingleOrDefault();
+
+            if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
+                && !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
+                this._songTimeInfoEntity.PlayingNewSong = true;
+                this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
+            }
+            else {
+                this._songTimeInfoEntity.PlayingNewSong = false;
+            }
         }
 
         protected virtual void Dispose(bool disposing)

@@ -35,8 +35,6 @@ namespace PracticePlugin.Views
         private static readonly Vector2 SeekCursorSize = new Vector2(4, 4);
         private static readonly Color SeekCursorColor = new Color(1, 1, 1, 1f);
 
-        private static readonly Vector2 TimeTextSize = new Vector2(16, 8);
-        private const float TimeTextMargin = 4;
         private const float StickToLooperCursorDistance = 0.02f;
         private bool init = false;
 
@@ -201,7 +199,7 @@ namespace PracticePlugin.Views
         public void ApplyPlaybackPosition()
         {
             this._songAudioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._songAudioSource.clip.samples, this.PlaybackPosition));
-            this._songAudioSource.time = this._songAudioSource.time - Mathf.Min(AheadTime, this._songAudioSource.time);
+            this._songAudioSource.time -= Mathf.Min(AheadTime, this._songAudioSource.time);
             this._songSeekBeatmapHandler.OnSongTimeChanged(this._songAudioSource.time, Mathf.Min(AheadTime, this._songAudioSource.time));
         }
 
