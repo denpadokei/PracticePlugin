@@ -20,7 +20,7 @@ namespace PracticePlugin.Models
             this._rectTransform = this.transform as RectTransform;
         }
 
-        private void LateUpdate()
+        public void LateUpdate()
         {
             this._rectTransform.anchoredPosition = new Vector2(this.Position, 0);
         }

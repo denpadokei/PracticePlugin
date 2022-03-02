@@ -119,7 +119,7 @@ namespace PracticePlugin.Views
             this.PlaybackPosition = Mathf.Clamp(this.PlaybackPosition, this._looperUI.StartTime, this._looperUI.EndTime);
         }
 
-        private void OnEnable()
+        public void OnEnable()
         {
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
@@ -132,7 +132,7 @@ namespace PracticePlugin.Views
 
         }
 
-        private void OnDisable()
+        public void OnDisable()
         {
             this._init = true;
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
@@ -159,7 +159,7 @@ namespace PracticePlugin.Views
             this._looperUI.UpdateCursorPosition(this.PlaybackPosition);
         }
 
-        private void LateUpdate()
+        public void LateUpdate()
         {
             var clampedPos = Mathf.Clamp(this.PlaybackPosition, this._looperUI.StartTime, this._looperUI.EndTime);
             this._seekBar.fillAmount = clampedPos;

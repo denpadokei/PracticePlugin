@@ -40,23 +40,23 @@ namespace PracticePlugin.Views
         }
 
         [UIAction("speedFormatter")]
-        private string SpeedForValue(float value)
+        public string SpeedForValue(float value)
         {
             return $"{value}%";
         }
         [UIAction("njsFormatter")]
-        private string NjsForValue(float value)
+        public string NjsForValue(float value)
         {
             return value == UIElementsCreator.s_defaultNJS ? $"<u>{value}</u>" : $"{value}";
         }
         [UIAction("spawnOffsetFormatter")]
-        private string OffsetForValue(float value)
+        public string OffsetForValue(float value)
         {
             return value == UIElementsCreator.s_defaultOffset ? $"<u>{value:F2}</u>" : $"{value:F2}";
         }
 
         [UIAction("#post-parse")]
-        private void PostParse()
+        public void PostParse()
         {
             if (this.gameObject.GetComponent<Touchable>() == null) {
                 this.gameObject.AddComponent<Touchable>();

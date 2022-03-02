@@ -159,10 +159,10 @@ namespace PracticePlugin.Models
 #endif
         }
 
-        private bool IsEqualToOne(float value)
-        {
-            return Math.Abs(value - 1) < 0.000000001f;
-        }
+        //private bool IsEqualToOne(float value)
+        //{
+        //    return Math.Abs(value - 1) < 0.000000001f;
+        //}
         public static void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
             timeSync.SetPrivateField("_timeScale", newTimeScale);
