@@ -7,58 +7,44 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 using Zenject;
 
 namespace PracticePlugin.Views
 {
     [HotReload]
-    public class PracticeUI : BSMLResourceViewController, IInitializable
+    public class PracticeUI : BSMLResourceViewController
     {
         public override string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name, "bsml");
 
-        private float _speed;
+        private int _speed;
         [UIValue("speed")]
-        public float speed
+        public int Speed
         {
             get => this._speed;
             set => this.SetProperty(ref this._speed, value);
         }
-        [UIAction("setSpeed")]
-        private void SetSpeed(float value)
-        {
-            this.speed = value;
-        }
+        
         private float _njs;
-
         [UIValue("njs")]
-        public float njs
+        public float NJS
         {
             get => this._njs;
             set => this.SetProperty(ref this._njs, value);
         }
-        [UIAction("setnjs")]
-        private void SetNjs(float value)
-        {
-            this.njs = value;
-        }
+        
         private float _offset;
         [UIValue("offset")]
-        public float offset
+        public float Offset
         {
             get => this._offset;
             set => this.SetProperty(ref this._offset, value);
         }
 
-        [UIAction("setoffset")]
-        private void SetSpawnOffset(float value)
-        {
-            this.offset = value;
-        }
-
         [UIAction("speedFormatter")]
         private string speedForValue(float value)
         {
-            return $"{(int)(value * 100)}%";
+            return $"{value}%";
         }
         [UIAction("njsFormatter")]
         private string njsForValue(float value)
@@ -78,44 +64,17 @@ namespace PracticePlugin.Views
                 this.gameObject.AddComponent<Touchable>();
             }
         }
-        private GameEnergyCounter _gameEnergyCounter;
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
-        private SongTimeInfoEntity _songTimeInfoEntity;
         [Inject]
-        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, GameEnergyCounter gameEnergyCounter, UIElementsCreator uIElementsCreator, SongTimeInfoEntity songTimeInfoEntity, AudioSpeedController audioSpeedController)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
-            this._gameEnergyCounter = gameEnergyCounter;
-
-            this._songTimeInfoEntity = songTimeInfoEntity;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
-                this.speed = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
-                this.njs = this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpMovementSpeed != 0 ? this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpMovementSpeed : BeatmapDifficultyMethods.NoteJumpMovementSpeed(this._gameplayCoreSceneSetupData.difficultyBeatmap.difficulty);
-                this.offset = this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpStartBeatOffset;
+                this.Speed = Mathf.RoundToInt(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul * 100);
+                this.NJS = this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpMovementSpeed != 0 ? this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpMovementSpeed : BeatmapDifficultyMethods.NoteJumpMovementSpeed(this._gameplayCoreSceneSetupData.difficultyBeatmap.difficulty);
+                this.Offset = this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpStartBeatOffset;
             }
         }
-
-        public void OnDisable()
-        {
-            this._songTimeInfoEntity.TimeScale = this.speed;
-        }
-
-        public void Initialize()
-        {
-            if (!this._songTimeInfoEntity.PracticeMode) {
-                return;
-            }
-
-            try {
-                if (PluginConfig.Instance.StartWithFullEnergy) {
-                    this._gameEnergyCounter.ProcessEnergyChange(1 - this._gameEnergyCounter.energy);
-                }
-            }
-            catch (Exception ex) {
-                Logger.Debug(ex.ToString());
-            }
-        }
-
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             this.NotifyPropertyChanged(e.PropertyName);

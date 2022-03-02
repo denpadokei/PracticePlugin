@@ -34,6 +34,9 @@ namespace PracticePlugin.Models
         #region // パブリックメソッド
         public void Initialize()
         {
+            if (!_songTimeInfoEntity.PracticeMode) {
+                return;
+            }
             this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
             BSEvents.levelFailed += this.BSEvents_levelFailed;
@@ -49,22 +52,38 @@ namespace PracticePlugin.Models
             }
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
             if (!this._songTimeInfoEntity.PracticeMode) {
-                this._timeScale = Mathf.Clamp(this.TimeScale, 1, SpeedMaxSize);
+                this.TimeScale = Mathf.Clamp(this.TimeScale, 1, SpeedMaxSize);
             }
             if (this._songTimeInfoEntity.PracticeMode) {
                 if (this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul != 1f) {
-                    this._timeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
+                    this.TimeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
                 }
                 else {
-                    this._timeScale = this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
+                    this.TimeScale = this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
                 }
             }
         }
-
+        public void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
+        {
+            var spawnMovementData = this._spawnController.GetPrivateField<BeatmapObjectSpawnMovementData>("_beatmapObjectSpawnMovementData");
+            var bpm = this._spawnController.GetPrivateField<VariableBpmProcessor>("_variableBpmProcessor").currentBpm;
+            if (PluginConfig.Instance.AdjustNJSWithSpeed) {
+                var newNJS = njs * (1 / this.TimeScale);
+                njs = newNJS;
+            }
+            spawnMovementData.SetPrivateField("_startNoteJumpMovementSpeed", njs);
+            spawnMovementData.SetPrivateField("_noteJumpStartBeatOffset", noteJumpStartBeatOffset);
+            spawnMovementData.Update(bpm, this._spawnController.GetPrivateField<float>("_jumpOffsetY"));
+        }
         private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(PracticeUI.speed)) {
-                this.TimeScale = this._practiceUI.speed;
+            Logger.Debug("PracticeUI_PropertyChanged");
+            if (e.PropertyName == nameof(PracticeUI.Offset) || e.PropertyName == nameof(PracticeUI.NJS)) {
+                this.UpdateSpawnMovementData(this._practiceUI.NJS, this._practiceUI.Offset);
+            }
+            else if (e.PropertyName == nameof(PracticeUI.Speed)) {
+                Logger.Debug($"{this._practiceUI.Speed}");
+                this.TimeScale = (float)(this._practiceUI.Speed / 100d);
             }
         }
 
@@ -93,8 +112,11 @@ namespace PracticePlugin.Models
             }
 
             var initData = this._audioTimeSyncController.GetPrivateField<AudioTimeSyncController.InitData>("_initData");
-            var newInitData = new AudioTimeSyncController.InitData(initData.audioClip,
-                this._audioTimeSyncController.songTime, initData.songTimeOffset, field);
+            var newInitData = new AudioTimeSyncController.InitData(
+                initData.audioClip,
+                this._audioTimeSyncController.songTime,
+                initData.songTimeOffset,
+                field);
             this._audioTimeSyncController.SetPrivateField("_initData", newInitData);
             //Chipmunk Removal as per base game
             if (!PluginConfig.Instance.DisablePitchCorrection) {
@@ -211,7 +233,7 @@ namespace PracticePlugin.Models
             this._practiceUI = practiceUI;
             this._songSeeker = songSeeker;
             // メモリリークしそう
-            this._mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().LastOrDefault();
+            this._mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().SingleOrDefault();
         }
 
         protected virtual void Dispose(bool disposing)

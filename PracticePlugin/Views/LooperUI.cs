@@ -15,8 +15,6 @@ namespace PracticePlugin.Views
 
         public float EndTime => Mathf.InverseLerp(0, SongSeeker.SeekBarSize.x, this._endCursor.Position);
 
-        public string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name, "bsml");
-
         public event Action OnDragEndEvent;
 
         private static readonly Vector2 CursorSize = new Vector2(3, 3);
