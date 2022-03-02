@@ -50,6 +50,7 @@ namespace PracticePlugin
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
+            Logger.Debug("OnSongTimeChanged");
             if (this._beatmapObjectCallbackController) {
                 this._beatmapData = this._beatmapObjectCallbackController.GetPrivateField<BeatmapData>("_beatmapData");
             }

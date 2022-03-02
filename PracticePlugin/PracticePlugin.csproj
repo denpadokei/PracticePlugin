@@ -143,8 +143,6 @@
   <ItemGroup>
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="PracticePlugin.csproj.user" Condition="Exists('PracticePlugin.csproj.user')" />
-    <EmbeddedResource Include="Views\LooperUI.bsml" />
-    <EmbeddedResource Include="Views\SongSeeker.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

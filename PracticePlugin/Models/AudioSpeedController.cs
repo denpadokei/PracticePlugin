@@ -34,6 +34,8 @@ namespace PracticePlugin.Models
         #region // パブリックメソッド
         public void Initialize()
         {
+            this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
+            this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
             BSEvents.levelFailed += this.BSEvents_levelFailed;
 
             if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID &&
@@ -59,13 +61,11 @@ namespace PracticePlugin.Models
             }
         }
 
-        public void Update()
+        private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (this._uiElementsCreator == null || this._songSeeker == null) {
-                return;
+            if (e.PropertyName == nameof(PracticeUI.speed)) {
+                this.TimeScale = this._practiceUI.speed;
             }
-
-            this._songSeeker.OnUpdate();
         }
 
         private void BSEvents_levelFailed(StandardLevelScenesTransitionSetupDataSO arg1, LevelCompletionResults results)
@@ -161,6 +161,22 @@ namespace PracticePlugin.Models
             timeSync.SetPrivateField("_playbackLoopIndex", 0);
             timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
         }
+
+        public void Update()
+        {
+            var newPos = (this._audioTimeSyncController.songTime + 0.1f) / this._audioTimeSyncController.songLength;
+            if (newPos >= this._looperUI.EndTime && this._looperUI.EndTime != 1) {
+                this._songSeeker.PlaybackPosition = this._looperUI.StartTime;
+                this.ApplyPlaybackPosition();
+            }
+        }
+        public void ApplyPlaybackPosition()
+        {
+            this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
+            this._audioSource.time = this._audioSource.time - Mathf.Min(AheadTime, this._audioSource.time);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(AheadTime, this._audioSource.time));
+            NoFailGameEnergy.hasFailed = false;
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
@@ -172,23 +188,29 @@ namespace PracticePlugin.Models
         private BeatmapObjectSpawnController _spawnController;
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
         public AudioTimeSyncController _audioTimeSyncController;
+        private AudioSource _audioSource;
         private AudioManagerSO _mixer;
         private SongTimeInfoEntity _songTimeInfoEntity;
-        private UIElementsCreator _uiElementsCreator;
+        private SongSeekBeatmapHandler _songSeekBeatmapHandler;
+        private LooperUI _looperUI;
         private SongSeeker _songSeeker;
+        private PracticeUI _practiceUI;
         private bool _disposedValue;
+        private const float AheadTime = 1f;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeeker songSeeker, UIElementsCreator uIElementsCreator)
+        public void Constractor(SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             this._audioTimeSyncController = audioTimeSyncController;
+            this._songSeekBeatmapHandler = songSeekBeatmapHandler;
+            this._looperUI = looperUI;
+            this._practiceUI = practiceUI;
             this._songSeeker = songSeeker;
-            this._uiElementsCreator = uIElementsCreator;
             // メモリリークしそう
             this._mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().LastOrDefault();
         }
@@ -199,6 +221,7 @@ namespace PracticePlugin.Models
                 if (disposing) {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)
                     BSEvents.levelFailed -= this.BSEvents_levelFailed;
+                    this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
                     this._mixer = null;
                 }
 

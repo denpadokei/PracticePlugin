@@ -1,7 +1,9 @@
-﻿using IPA.Utilities;
+﻿using BeatSaberMarkupLanguage;
+using IPA.Utilities;
 using PracticePlugin.Models;
 using PracticePlugin.Views;
 using System;
+using System.Reflection;
 using UnityEngine;
 using Zenject;
 
@@ -16,30 +18,48 @@ namespace PracticePlugin
         private SongTimeInfoEntity _songTimeInfoEntity;
         public BeatmapObjectSpawnController _spawnController;
         private AudioTimeSyncController _audioTimeSyncController;
+        private PracticeUI _practiceUI;
         internal static float _newTimeScale { get; private set; } = 1f;
 
         [Inject]
-        public void Constractor(BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity, SongSeeker songSeeker, AudioTimeSyncController audioTimeSyncController)
+        public void Constractor(BeatmapObjectSpawnController beatmapObjectSpawnController, SongTimeInfoEntity songTimeInfoEntity, SongSeeker songSeeker, AudioTimeSyncController audioTimeSyncController, PracticeUI practiceUI)
         {
             this._spawnController = beatmapObjectSpawnController;
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._songSeeker = songSeeker;
             this._audioTimeSyncController = audioTimeSyncController;
+            this._practiceUI = practiceUI;
         }
         public void Initialize()
         {
-            this.InitDelayed();
-        }
-        private void InitDelayed()
-        {
+            this.gameObject.AddComponent<RectTransform>();
             if (this._songTimeInfoEntity.PracticeMode) {
-                new GameObject("No Fail Game Energy").AddComponent<NoFailGameEnergy>();
-                defaultNJS = this._spawnController.GetPrivateField<BeatmapObjectSpawnController.InitData>("_initData").noteJumpMovementSpeed;
-                //     PracticeUI.instance.njs = defaultNJS;
-                //        Logger.Debug("NJS: " + UIElementsCreator.defaultNJS);
-                defaultOffset = BS_Utils.Plugin.LevelData.GameplayCoreSceneSetupData.difficultyBeatmap.noteJumpStartBeatOffset;
-                //      PracticeUI.instance.offset = defaultOffset;
-                //        Logger.Debug("Offset: " + UIElementsCreator.defaultOffset);
+                var canvas = GameObject.Find("PauseMenu").transform.Find("Wrapper").transform.Find("MenuWrapper").transform.Find("Canvas");
+
+                if (canvas == null) {
+                    Console.WriteLine("Canvas Null");
+                }
+                var uiObj = new GameObject("PracticePlugin Seeker UI", typeof(RectTransform));
+
+                (uiObj.transform as RectTransform).anchorMin = new Vector2(0, 0);
+                (uiObj.transform as RectTransform).anchorMax = new Vector2(1, 1);
+                (uiObj.transform as RectTransform).sizeDelta = new Vector2(0, 0);
+                this.transform.SetParent(uiObj.transform as RectTransform, false);
+                BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._practiceUI.ResourceName), canvas.gameObject, this._practiceUI);
+                _practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
+                uiObj.transform.SetParent(canvas, false);
+                uiObj.transform.localScale = new Vector3(1, 1, 1);
+                uiObj.transform.localPosition = new Vector3(0f, -3f, 0f);
+                //var seekerObj = new GameObject("Song Seeker");
+                //seekerObj.transform.SetParent(this.transform as RectTransform, false);
+                this._songSeeker.gameObject.transform.SetParent(canvas, false);
+            }
+        }
+
+        private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(PracticeUI.offset) || e.PropertyName == nameof(PracticeUI.njs)) {
+                this.UpdateSpawnMovementData(_practiceUI.njs, _practiceUI.offset);
             }
         }
 
@@ -80,6 +100,10 @@ namespace PracticePlugin
             }
         }
 
+        public void OnDestroy()
+        {
+            _practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
+        }
         private void SpeedControllerOnValueChangedEvent(float timeScale)
         {
             _newTimeScale = timeScale;
