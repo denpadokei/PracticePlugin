@@ -1,0 +1,7 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+	id='root'>
+	<vertical preferred-width='480' horizontal-fit='PreferredSize' child-expand-width='true' anchor-pos-y='-140'>
+		<text text='~fail-text' align='Center'></text>
+	</vertical>
+</bg>

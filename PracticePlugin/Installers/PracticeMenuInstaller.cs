@@ -1,4 +1,5 @@
 ﻿using PracticePlugin.Models;
+using PracticePlugin.Views;
 using Zenject;
 
 namespace PracticePlugin.Installers
@@ -7,7 +8,7 @@ namespace PracticePlugin.Installers
     {
         public override void InstallBindings()
         {
-            this.Container.BindInterfacesAndSelfTo<ResultViewTextController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<ResultViewTextController>().FromNewComponentAsViewController().AsSingle().NonLazy();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using BS_Utils.Utilities;
+﻿using IPA.Utilities;
 using System.Collections.Generic;
 using Zenject;
 
@@ -16,41 +16,29 @@ namespace PracticePlugin.Models
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._beatmapObjectCallbackController = beatmapObjectCallbackController;
-            //this._beatmapObjectSpawnController = beatmapObjectSpawnController;
-            //this._beatmapObjectExecutionRatingsRecorder = beatmapObjectExecutionRatingsRecorder;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
             this._beatmapObjectManager = beatmapObjectManager;
             this._callbackList = this._beatmapObjectCallbackController
-                        .GetPrivateField<List<BeatmapObjectCallbackData>>(
+                        .GetField<List<BeatmapObjectCallbackData>, BeatmapObjectCallbackController>(
                         "_beatmapObjectCallbackData");
             this._beatmapData = this._beatmapObjectCallbackController
-                .GetPrivateField<BeatmapData>("_beatmapData");
-            //this._notePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<GameNoteController>>("_gameNotePoolContainer");
-            //this._bombNotePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<BombNoteController>>("_bombNotePoolContainer");
-            //this._obstaclePool = this._beatmapObjectManager.GetPrivateField<MemoryPoolContainer<ObstacleController>>("_obstaclePoolContainer");
+                .GetField<IReadonlyBeatmapData, BeatmapObjectCallbackController>("_beatmapData");
         }
 
         private List<BeatmapObjectCallbackData> CallbackList => this._callbackList;
 
         private readonly List<BeatmapObjectCallbackData> _callbackList;
         private readonly BeatmapObjectCallbackController _beatmapObjectCallbackController;
-        //private readonly BeatmapObjectSpawnController _beatmapObjectSpawnController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
-        //private readonly BeatmapObjectExecutionRatingsRecorder _beatmapObjectExecutionRatingsRecorder;
-
-        //private readonly MemoryPoolContainer<GameNoteController> _notePool;
-        //private readonly MemoryPoolContainer<BombNoteController> _bombNotePool;
-        //private readonly MemoryPoolContainer<ObstacleController> _obstaclePool;
-
-        private BeatmapData _beatmapData;
+        private IReadonlyBeatmapData _beatmapData;
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
             Logger.Debug("OnSongTimeChanged");
             if (this._beatmapObjectCallbackController) {
-                this._beatmapData = this._beatmapObjectCallbackController.GetPrivateField<BeatmapData>("_beatmapData");
+                this._beatmapData = this._beatmapObjectCallbackController.GetField<IReadonlyBeatmapData, BeatmapObjectCallbackController>("_beatmapData");
             }
 
             foreach (var callbackData in this.CallbackList) {
@@ -78,11 +66,10 @@ namespace PracticePlugin.Models
                 newNextEventIndex++;
             }
 
-            this._beatmapObjectCallbackController.SetPrivateField("_nextEventIndex", newNextEventIndex);
-            //  _beatmapObjectManager.DissolveAllObjects();
-            var notes = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>>("_gameNotePoolContainer");
-            var bombs = this._beatmapObjectManager.GetField<MemoryPoolContainer<BombNoteController>>("_bombNotePoolContainer");
-            var walls = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>>("_obstaclePoolContainer");
+            this._beatmapObjectCallbackController.SetField("_nextEventIndex", newNextEventIndex);
+            var notes = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_gameNotePoolContainer");
+            var bombs = this._beatmapObjectManager.GetField<MemoryPoolContainer<BombNoteController>, BasicBeatmapObjectManager>("_bombNotePoolContainer");
+            var walls = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
             foreach (var note in notes.activeItems) {
                 if (note == null) {
                     continue;
@@ -93,7 +80,6 @@ namespace PracticePlugin.Models
                 note.enabled = true;
                 note.gameObject.SetActive(true);
                 note.Dissolve(0f);
-                //    _beatmapObjectManager.InvokeMethod<BeatmapObjectManager>("Despawn", note as NoteController);
             }
             foreach (var bomb in bombs.activeItems) {
                 if (bomb == null) {
@@ -105,7 +91,6 @@ namespace PracticePlugin.Models
                 bomb.enabled = true;
                 bomb.gameObject.SetActive(true);
                 bomb.Dissolve(0f);
-                //    _beatmapObjectManager.InvokeMethod<BeatmapObjectManager>("Despawn", bomb as NoteController);
             }
             foreach (var wall in walls.activeItems) {
                 if (wall == null) {
@@ -117,39 +102,11 @@ namespace PracticePlugin.Models
                 wall.enabled = true;
                 wall.gameObject.SetActive(true);
                 wall.Dissolve(0f);
-                //_beatmapObjectManager.InvokeMethod<BeatmapObjectManager>("Despawn", wall);
             }
-            /*
-            var notesA = _notePool.activeItems.ToList();
-            foreach (var noteA in notesA)
-            {
-                //               Logger.Debug("Despawning, Length: " + notesA.Count);
-                _beatmapObjectManager.DissolveAllObjects(noteA);
-            }
-            
-            var notesB = _noteBPool.activeItems.ToList();
-            foreach (var noteB in notesB)
-            {
-                _beatmapObjectManager.Despawn(noteB);
-            }
-
-            var bombs = _bombNotePool.activeItems.ToList();
-            foreach (var bomb in bombs)
-            {
-                _beatmapObjectManager.Despawn(bomb);
-            }
-
-            var obstacles = _obstaclePool.activeItems.ToList();
-            foreach (var obstacle in obstacles)
-            {
-                _beatmapObjectManager.Despawn(obstacle);
-            }
-            */
-
-            this._audioTimeSyncController.SetPrivateField("_prevAudioSamplePos", -1);
-            this._audioTimeSyncController.SetPrivateField("_songTime", newSongTime);
-            this._noteCutSoundEffectManager.SetPrivateField("_prevNoteATime", -1);
-            this._noteCutSoundEffectManager.SetPrivateField("_prevNoteBTime", -1);
+            this._audioTimeSyncController.SetField("_prevAudioSamplePos", -1);
+            this._audioTimeSyncController.SetField("_songTime", newSongTime);
+            this._noteCutSoundEffectManager.SetField("_prevNoteATime", -1f);
+            this._noteCutSoundEffectManager.SetField("_prevNoteBTime", -1f);
         }
     }
 }
