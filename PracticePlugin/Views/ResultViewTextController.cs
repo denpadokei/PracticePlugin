@@ -1,17 +1,36 @@
-﻿using PracticePlugin.Configuration;
+﻿using BeatSaberMarkupLanguage;
+using BeatSaberMarkupLanguage.Attributes;
+using BeatSaberMarkupLanguage.ViewControllers;
+using PracticePlugin.Configuration;
+using PracticePlugin.Models;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using Zenject;
 
-namespace PracticePlugin.Models
+namespace PracticePlugin.Views
 {
-    public class ResultViewTextController : MonoBehaviour, IDisposable
+    [HotReload]
+    public class ResultViewTextController : BSMLAutomaticViewController, IInitializable, IDisposable
     {
-        private bool _disposedValue;
-
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プロパティ
+        public string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name, "bsml");
+
+        /// <summary>Fail テキスト を取得、設定</summary>
+        private string _failText;
+        [UIValue("fail-text")]
+        /// <summary>Fail テキスト を取得、設定</summary>
+        public string FailText
+        {
+            get => this._failText;
+
+            set => this.SetProperty(ref this._failText, value);
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // コマンド
@@ -24,35 +43,53 @@ namespace PracticePlugin.Models
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // パブリックメソッド
+        [UIAction("#post-parse")]
+        public void PostParse()
+        {
+            this._root.transform.localScale = Vector3.one * 0.2f;
+        }
+        public void Initialize()
+        {
+            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this.ResourceName), this._resultsViewController.gameObject, this);
+        }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // プライベートメソッド
         private void OnResultsViewController_didActivateEvent(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
         {
-            if (this._songTimeInfoEntity.ShowFailTextNext && this._showTimeFailed) {
-                if (this._failText == null) {
-                    this._failText = BeatSaberMarkupLanguage.BeatSaberUI.CreateText(this._resultsViewController.rectTransform, this._songTimeInfoEntity.FailTimeText, new Vector2(15f, -35f));
-                }
-                else {
-                    this._failText.text = this._songTimeInfoEntity.FailTimeText;
-                }
-
-                this._failText.richText = true;
+            Logger.Debug("OnResultsViewController_didActivateEvent");
+            Logger.Debug($"Is Show?:{this._songTimeInfoEntity.ShowFailTextNext && PluginConfig.Instance.ShowTimeFailed}");
+            if (this._songTimeInfoEntity.ShowFailTextNext && PluginConfig.Instance.ShowTimeFailed) {
+                Logger.Debug($"failText:{this._songTimeInfoEntity.FailTimeText}");
+                this.FailText = this._songTimeInfoEntity.FailTimeText;
             }
             else {
-                if (this._failText != null) {
-                    this._failText.text = "";
-                }
+                this.FailText = "";
             }
             this._songTimeInfoEntity.ShowFailTextNext = false;
+        }
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            this.NotifyPropertyChanged(e.PropertyName);
+        }
+
+        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string memberName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) {
+                return false;
+            }
+            field = value;
+            this.OnPropertyChanged(new PropertyChangedEventArgs(memberName));
+            return true;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // メンバ変数
         private ResultsViewController _resultsViewController;
-        private bool _showTimeFailed;
-        private TextMeshProUGUI _failText;
         private SongTimeInfoEntity _songTimeInfoEntity;
+        private bool _disposedValue;
+        [UIObject("root")]
+        private GameObject _root;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
@@ -62,15 +99,12 @@ namespace PracticePlugin.Models
             this._resultsViewController = resultsViewController;
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._resultsViewController.didActivateEvent += this.OnResultsViewController_didActivateEvent;
-            this._failText = this.gameObject.AddComponent<TextMeshProUGUI>();
-            this._showTimeFailed = PluginConfig.Instance.ShowTimeFailed;
         }
         protected virtual void Dispose(bool disposing)
         {
             if (!this._disposedValue) {
                 if (disposing) {
                     this._resultsViewController.didActivateEvent -= this.OnResultsViewController_didActivateEvent;
-                    Destroy(this._failText);
                 }
                 this._disposedValue = true;
             }

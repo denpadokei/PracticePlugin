@@ -5,10 +5,9 @@
   "gameVersion": "1.19.0",
   "id": "PracticePlugin",
   "name": "PracticePlugin",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "dependsOn": {
     "BSIPA": "^4.2.0",
-    "BS Utils": "^1.11.2",
     "SiraUtil": "^3.0.0",
     "BeatSaberMarkupLanguage": "^1.6.1"
   },

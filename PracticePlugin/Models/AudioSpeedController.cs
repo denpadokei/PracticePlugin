@@ -1,9 +1,8 @@
-﻿using BS_Utils.Utilities;
-using IPA.Utilities;
+﻿using IPA.Utilities;
 using PracticePlugin.Configuration;
 using PracticePlugin.Views;
+using SiraUtil.Services;
 using System;
-using System.Linq;
 using UnityEngine;
 using Zenject;
 
@@ -38,7 +37,6 @@ namespace PracticePlugin.Models
             }
             this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
-            BSEvents.levelFailed += this.BSEvents_levelFailed;
 
 
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
@@ -56,15 +54,15 @@ namespace PracticePlugin.Models
         }
         public void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
         {
-            var spawnMovementData = this._spawnController.GetPrivateField<BeatmapObjectSpawnMovementData>("_beatmapObjectSpawnMovementData");
-            var bpm = this._spawnController.GetPrivateField<VariableBpmProcessor>("_variableBpmProcessor").currentBpm;
+            var spawnMovementData = this._spawnController.GetField<BeatmapObjectSpawnMovementData, BeatmapObjectSpawnController>("_beatmapObjectSpawnMovementData");
+            var bpm = this._spawnController.GetField<VariableBpmProcessor, BeatmapObjectSpawnController>("_variableBpmProcessor").currentBpm;
             if (PluginConfig.Instance.AdjustNJSWithSpeed) {
                 var newNJS = njs * (1 / this.TimeScale);
                 njs = newNJS;
             }
-            spawnMovementData.SetPrivateField("_startNoteJumpMovementSpeed", njs);
-            spawnMovementData.SetPrivateField("_noteJumpStartBeatOffset", noteJumpStartBeatOffset);
-            spawnMovementData.Update(bpm, this._spawnController.GetPrivateField<float>("_jumpOffsetY"));
+            spawnMovementData.SetField("_startNoteJumpMovementSpeed", njs);
+            spawnMovementData.SetField("_noteJumpStartBeatOffset", noteJumpStartBeatOffset);
+            spawnMovementData.Update(bpm, this._spawnController.GetField<float, BeatmapObjectSpawnController>("_jumpOffsetY"));
         }
         private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -76,12 +74,12 @@ namespace PracticePlugin.Models
                 this.TimeScale = (float)(this._practiceUI.Speed / 100d);
             }
         }
-
-        private void BSEvents_levelFailed(StandardLevelScenesTransitionSetupDataSO arg1, LevelCompletionResults results)
+        private void LevelFinisher_StandardLevelFinished(LevelCompletionResults obj)
         {
-            var endTime = results.endSongTime;
-            var length = this._audioTimeSyncController.songTime;
-            this._songTimeInfoEntity.FailTimeText = $"<#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
+            Logger.Debug("LevelFinisher_StandardLevelFinished");
+            var endTime = obj.endSongTime;
+            var length = this._audioTimeSyncController.songLength;
+            this._songTimeInfoEntity.FailTimeText = $@"<color=#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
             this._songTimeInfoEntity.ShowFailTextNext = true;
         }
         #endregion
@@ -100,13 +98,13 @@ namespace PracticePlugin.Models
             if (!this._spawnController) {
                 return;
             }
-            var initData = this._audioTimeSyncController.GetPrivateField<AudioTimeSyncController.InitData>("_initData");
+            var initData = this._audioTimeSyncController.GetField<AudioTimeSyncController.InitData, AudioTimeSyncController>("_initData");
             var newInitData = new AudioTimeSyncController.InitData(
                 initData.audioClip,
                 this._audioTimeSyncController.songTime,
                 initData.songTimeOffset,
                 field);
-            this._audioTimeSyncController.SetPrivateField("_initData", newInitData);
+            this._audioTimeSyncController.SetField("_initData", newInitData);
             //Chipmunk Removal as per base game
             if (!PluginConfig.Instance.DisablePitchCorrection) {
                 if (field == 1f) {
@@ -121,8 +119,8 @@ namespace PracticePlugin.Models
             }
             ResetTimeSync(this._audioTimeSyncController, field, newInitData);
 #if false
-            //       AudioTimeSync.SetPrivateField("_timeScale", value);
-            //        AudioTimeSync.Init(_songAudio.clip, _songAudio.time, AudioTimeSync.GetPrivateField<float>("_songTimeOffset"), value);
+            //       AudioTimeSync.SetField("_timeScale", value);
+            //        AudioTimeSync.Init(_songAudio.clip, _songAudio.time, AudioTimeSync.GetField<float>("_songTimeOffset"), value);
             if (field == 1f)
                 _mixer.musicPitch = 1;
             else
@@ -139,22 +137,22 @@ namespace PracticePlugin.Models
                 }
             }
             if (AudioTimeSync != null) {
-                //     AudioTimeSync.SetPrivateField("_timeScale", _timeScale); // = _timeScale;
+                //     AudioTimeSync.SetField("_timeScale", _timeScale); // = _timeScale;
                 //     AudioTimeSync.Init(_songAudio.clip, _songAudio.time, 
-                //           AudioTimeSync.GetPrivateField<float>("_songTimeOffset") - AudioTimeSync.GetPrivateField<FloatSO>("_audioLatency").value, _timeScale);
+                //           AudioTimeSync.GetField<float>("_songTimeOffset") - AudioTimeSync.GetField<FloatSO>("_audioLatency").value, _timeScale);
                 Logger.Debug("Called TimeScale");
 
                 if (_songAudio != null) {
                     _songAudio.pitch = field;
                 }
                 //         AudioTimeSync.forcedNoAudioSync = true;
-                //         float num = AudioTimeSync.GetPrivateField<float>("_startSongTime") + AudioTimeSync.GetPrivateField<float>("_songTimeOffset");
-                //     AudioTimeSync.SetPrivateField("_audioStartTimeOffsetSinceStart", (Time.timeSinceLevelLoad * _timeScale) - num);
-                //   AudioTimeSync.SetPrivateField("_fixingAudioSyncError", false);
-                //   AudioTimeSync.SetPrivateField("_prevAudioSamplePos", _songAudio.timeSamples);
-                //   AudioTimeSync.SetPrivateField("_playbackLoopIndex", 0);
-                //          AudioTimeSync.SetPrivateField("_dspTimeOffset", AudioSettings.dspTime - (double)num);
-                //    AudioTimeSync.SetPrivateField("_timeScale", _timeScale); // = _timeScale;
+                //         float num = AudioTimeSync.GetField<float>("_startSongTime") + AudioTimeSync.GetField<float>("_songTimeOffset");
+                //     AudioTimeSync.SetField("_audioStartTimeOffsetSinceStart", (Time.timeSinceLevelLoad * _timeScale) - num);
+                //   AudioTimeSync.SetField("_fixingAudioSyncError", false);
+                //   AudioTimeSync.SetField("_prevAudioSamplePos", _songAudio.timeSamples);
+                //   AudioTimeSync.SetField("_playbackLoopIndex", 0);
+                //          AudioTimeSync.SetField("_dspTimeOffset", AudioSettings.dspTime - (double)num);
+                //    AudioTimeSync.SetField("_timeScale", _timeScale); // = _timeScale;
             }
 #endif
         }
@@ -165,11 +163,11 @@ namespace PracticePlugin.Models
         //}
         public static void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
-            timeSync.SetPrivateField("_timeScale", newTimeScale);
-            timeSync.SetPrivateField("_startSongTime", timeSync.songTime);
-            timeSync.SetPrivateField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
-            timeSync.SetPrivateField("_fixingAudioSyncError", false);
-            timeSync.SetPrivateField("_playbackLoopIndex", 0);
+            timeSync.SetField("_timeScale", newTimeScale);
+            timeSync.SetField("_startSongTime", timeSync.songTime);
+            timeSync.SetField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float, AudioTimeSyncController>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
+            timeSync.SetField("_fixingAudioSyncError", false);
+            timeSync.SetField("_playbackLoopIndex", 0);
             timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
         }
 
@@ -205,13 +203,14 @@ namespace PracticePlugin.Models
         private LooperUI _looperUI;
         private SongSeeker _songSeeker;
         private PracticeUI _practiceUI;
+        private ILevelFinisher _levelFinisher;
         private bool _disposedValue;
         private const float s_aheadTime = 1f;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker)
+        public void Constractor(AudioManagerSO audioManagerSO, ILevelFinisher levelFinisher, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
@@ -221,9 +220,8 @@ namespace PracticePlugin.Models
             this._looperUI = looperUI;
             this._practiceUI = practiceUI;
             this._songSeeker = songSeeker;
-            // メモリリークしそう
-            this._mixer = Resources.FindObjectsOfTypeAll<AudioManagerSO>().SingleOrDefault();
-
+            this._mixer = audioManagerSO;
+            this._levelFinisher = levelFinisher;
             if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
                 && !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
                 this._songTimeInfoEntity.PlayingNewSong = true;
@@ -232,14 +230,15 @@ namespace PracticePlugin.Models
             else {
                 this._songTimeInfoEntity.PlayingNewSong = false;
             }
-        }
 
+            this._levelFinisher.StandardLevelFinished += this.LevelFinisher_StandardLevelFinished;
+        }
         protected virtual void Dispose(bool disposing)
         {
             if (!this._disposedValue) {
                 if (disposing) {
                     // TODO: マネージド状態を破棄します (マネージド オブジェクト)
-                    BSEvents.levelFailed -= this.BSEvents_levelFailed;
+                    this._levelFinisher.StandardLevelFinished -= this.LevelFinisher_StandardLevelFinished;
                     this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
                     this._mixer = null;
                 }

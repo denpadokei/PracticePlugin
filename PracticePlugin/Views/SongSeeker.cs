@@ -46,6 +46,7 @@ namespace PracticePlugin.Views
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeekBeatmapHandler = songSeekBeatmapHandler;
             this._looperUI = looperUI;
+            this._songAudioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
         }
         public void SetPlaybackPosition(float value, float start, float end)
         {
@@ -55,7 +56,6 @@ namespace PracticePlugin.Views
         {
             Logger.Debug("Initialize");
             this.gameObject.AddComponent<RectTransform>();
-            this._songAudioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             var tex = Texture2D.whiteTexture;
             var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);
 
@@ -161,6 +161,9 @@ namespace PracticePlugin.Views
 
         public void LateUpdate()
         {
+            if (this._looperUI == null || this._seekBar == null || this._seekCursor == null) {
+                return;
+            }
             var clampedPos = Mathf.Clamp(this.PlaybackPosition, this._looperUI.StartTime, this._looperUI.EndTime);
             this._seekBar.fillAmount = clampedPos;
             this._seekCursor.rectTransform.anchoredPosition =
@@ -205,6 +208,9 @@ namespace PracticePlugin.Views
 
         private void UpdateCurrentTimeText(float playbackPos)
         {
+            if (this._currentTime == null || this._songAudioSource == null) {
+                return;
+            }
             this._currentTime.text = FormatTimeSpan(TimeSpan.FromSeconds(Mathf.Lerp(0, this._songAudioSource.clip.length, playbackPos)));
         }
 
