@@ -19,7 +19,6 @@ namespace PracticePlugin
         /// </summary>
         public void Init(IPALogger logger, Config conf, Zenjector zenjector)
         {
-
             Log = logger;
             Log.Info("PracticePlugin initialized.");
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();

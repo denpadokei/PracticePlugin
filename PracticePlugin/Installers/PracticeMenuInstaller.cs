@@ -1,5 +1,4 @@
-﻿using PracticePlugin.Models;
-using PracticePlugin.Views;
+﻿using PracticePlugin.Views;
 using Zenject;
 
 namespace PracticePlugin.Installers

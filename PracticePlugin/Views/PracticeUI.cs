@@ -11,9 +11,9 @@ using Zenject;
 namespace PracticePlugin.Views
 {
     [HotReload]
-    public class PracticeUI : BSMLResourceViewController
+    public class PracticeUI : BSMLAutomaticViewController
     {
-        public override string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name, "bsml");
+        public string ResourceName => string.Join(".", this.GetType().Namespace, this.GetType().Name, "bsml");
 
         private int _speed;
         [UIValue("speed")]
@@ -64,13 +64,15 @@ namespace PracticePlugin.Views
         }
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
         [Inject]
-        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
                 this.Speed = Mathf.RoundToInt(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul * 100);
-                this.NJS = this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpMovementSpeed != 0 ? this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpMovementSpeed : BeatmapDifficultyMethods.NoteJumpMovementSpeed(this._gameplayCoreSceneSetupData.difficultyBeatmap.difficulty);
-                this.Offset = this._gameplayCoreSceneSetupData.difficultyBeatmap.noteJumpStartBeatOffset;
+                UIElementsCreator.s_defaultNJS = initData.noteJumpMovementSpeed;
+                this.NJS = UIElementsCreator.s_defaultNJS;
+                UIElementsCreator.s_defaultOffset = initData.noteJumpValue;
+                this.Offset = UIElementsCreator.s_defaultOffset;
             }
         }
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)

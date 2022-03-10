@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
+    <Compile Include="Extentions\InitDataExtention.cs" />
     <Compile Include="Installers\PlayerInstaller.cs" />
     <Compile Include="Installers\PracticeAppInstaller.cs" />
     <Compile Include="Installers\PracticeMenuInstaller.cs" />
