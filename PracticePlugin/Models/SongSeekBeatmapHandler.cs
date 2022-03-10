@@ -1,8 +1,6 @@
 ﻿using IPA.Utilities;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -48,7 +46,7 @@ namespace PracticePlugin.Models
             var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
             var bombs = this._beatmapObjectManager.GetField<MemoryPoolContainer<BombNoteController>, BasicBeatmapObjectManager>("_bombNotePoolContainer");
             var walls = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
-            
+
             while (basicGameNotePoolContainer.activeItems.Any()) {
                 var item = basicGameNotePoolContainer.activeItems.First();
                 item.Hide(true);

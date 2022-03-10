@@ -83,10 +83,19 @@ namespace PracticePlugin.Models
         private void LevelFinisher_StandardLevelFinished(LevelCompletionResults obj)
         {
             Logger.Debug("LevelFinisher_StandardLevelFinished");
-            var endTime = obj.endSongTime;
-            var length = this._audioTimeSyncController.songLength;
-            this._songTimeInfoEntity.FailTimeText = $@"<color=#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
-            this._songTimeInfoEntity.ShowFailTextNext = true;
+            switch (obj.levelEndStateType) {
+                case LevelCompletionResults.LevelEndStateType.Failed:
+                    var endTime = obj.endSongTime;
+                    var length = this._audioTimeSyncController.songLength;
+                    this._songTimeInfoEntity.FailTimeText = $@"<color=#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
+                    this._songTimeInfoEntity.ShowFailTextNext = true;
+                    break;
+                case LevelCompletionResults.LevelEndStateType.Incomplete:
+                case LevelCompletionResults.LevelEndStateType.Cleared:
+                default:
+                    this._songTimeInfoEntity.ShowFailTextNext = false;
+                    break;
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*

@@ -1,10 +1,8 @@
-﻿using HarmonyLib;
-using IPA;
+﻿using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using PracticePlugin.Installers;
 using SiraUtil.Zenject;
-using System.Reflection;
 using IPALogger = IPA.Logging.Logger;
 
 namespace PracticePlugin
