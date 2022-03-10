@@ -7,7 +7,7 @@ using IPALogger = IPA.Logging.Logger;
 
 namespace PracticePlugin
 {
-    [Plugin(RuntimeOptions.DynamicInit)]
+    [Plugin(RuntimeOptions.SingleStartInit)]
     public class Plugin
     {
         internal static IPALogger Log { get; private set; }
