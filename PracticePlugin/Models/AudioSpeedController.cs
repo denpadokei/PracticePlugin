@@ -1,5 +1,6 @@
 ﻿using IPA.Utilities;
 using PracticePlugin.Configuration;
+using PracticePlugin.Extentions;
 using PracticePlugin.Views;
 using SiraUtil.Services;
 using System;
@@ -55,14 +56,19 @@ namespace PracticePlugin.Models
         public void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
         {
             var spawnMovementData = this._spawnController.GetField<BeatmapObjectSpawnMovementData, BeatmapObjectSpawnController>("_beatmapObjectSpawnMovementData");
-            var bpm = this._spawnController.GetField<VariableBpmProcessor, BeatmapObjectSpawnController>("_variableBpmProcessor").currentBpm;
+            var initData = this._spawnController.GetField<BeatmapObjectSpawnController.InitData, BeatmapObjectSpawnController>("_initData");
+            var bpm = this._bpmController.currentBpm;
             if (PluginConfig.Instance.AdjustNJSWithSpeed) {
                 var newNJS = njs * (1 / this.TimeScale);
                 njs = newNJS;
             }
-            spawnMovementData.SetField("_startNoteJumpMovementSpeed", njs);
-            spawnMovementData.SetField("_noteJumpStartBeatOffset", noteJumpStartBeatOffset);
-            spawnMovementData.Update(bpm, this._spawnController.GetField<float, BeatmapObjectSpawnController>("_jumpOffsetY"));
+            initData.Update(njs, noteJumpStartBeatOffset);
+            this._spawnController.SetField("_isInitialized", false);
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_obstacleDataCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_noteDataCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_sliderDataCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_spawnRotationCallbackWrapper"));
+            this._spawnController.Start();
         }
         private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -206,11 +212,13 @@ namespace PracticePlugin.Models
         private ILevelFinisher _levelFinisher;
         private bool _disposedValue;
         private const float s_aheadTime = 1f;
+        private IBpmController _bpmController;
+        private BeatmapCallbacksController _beatmapCallbackController;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(AudioManagerSO audioManagerSO, ILevelFinisher levelFinisher, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker)
+        public void Constractor(AudioManagerSO audioManagerSO, ILevelFinisher levelFinisher, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
@@ -222,6 +230,8 @@ namespace PracticePlugin.Models
             this._songSeeker = songSeeker;
             this._mixer = audioManagerSO;
             this._levelFinisher = levelFinisher;
+            this._bpmController = bpmController;
+            this._beatmapCallbackController = beatmapCallbacksController;
             if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
                 && !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
                 this._songTimeInfoEntity.PlayingNewSong = true;

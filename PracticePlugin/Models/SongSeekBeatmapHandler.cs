@@ -1,5 +1,8 @@
 ﻿using IPA.Utilities;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -10,103 +13,73 @@ namespace PracticePlugin.Models
         [Inject]
         public SongSeekBeatmapHandler(
             AudioTimeSyncController audioTimeSyncController,
-            BeatmapObjectCallbackController beatmapObjectCallbackController,
+            BeatmapCallbacksController beatmapCallbacksController,
             NoteCutSoundEffectManager noteCutSoundEffectManager,
+            IReadonlyBeatmapData beatmapData,
             BasicBeatmapObjectManager beatmapObjectManager)
         {
             this._audioTimeSyncController = audioTimeSyncController;
-            this._beatmapObjectCallbackController = beatmapObjectCallbackController;
+            this._beatmapCallbacksController = beatmapCallbacksController;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
             this._beatmapObjectManager = beatmapObjectManager;
-            this._callbackList = this._beatmapObjectCallbackController
-                        .GetField<List<BeatmapObjectCallbackData>, BeatmapObjectCallbackController>(
-                        "_beatmapObjectCallbackData");
-            this._beatmapData = this._beatmapObjectCallbackController
-                .GetField<IReadonlyBeatmapData, BeatmapObjectCallbackController>("_beatmapData");
         }
-
-        private List<BeatmapObjectCallbackData> CallbackList => this._callbackList;
-
-        private readonly List<BeatmapObjectCallbackData> _callbackList;
-        private readonly BeatmapObjectCallbackController _beatmapObjectCallbackController;
+        private readonly BeatmapCallbacksController _beatmapCallbacksController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
-        private IReadonlyBeatmapData _beatmapData;
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
             Logger.Debug("OnSongTimeChanged");
-            if (this._beatmapObjectCallbackController) {
-                this._beatmapData = this._beatmapObjectCallbackController.GetField<IReadonlyBeatmapData, BeatmapObjectCallbackController>("_beatmapData");
-            }
-
-            foreach (var callbackData in this.CallbackList) {
-                for (var i = 0; i < this._beatmapData.beatmapLinesData.Count; i++) {
-                    callbackData.nextObjectIndexInLine[i] = 0;
-                    while (callbackData.nextObjectIndexInLine[i] < this._beatmapData.beatmapLinesData[i].beatmapObjectsData.Count) {
-                        var beatmapObjectData = this._beatmapData.beatmapLinesData[i].beatmapObjectsData[callbackData.nextObjectIndexInLine[i]];
-                        if (beatmapObjectData.time - aheadTime >= newSongTime) {
-                            break;
-                        }
-
-                        callbackData.nextObjectIndexInLine[i]++;
-                    }
-                }
-            }
-
-            var newNextEventIndex = 0;
-
-            while (newNextEventIndex < this._beatmapData.beatmapEventsData.Count) {
-                var beatmapEventData = this._beatmapData.beatmapEventsData[newNextEventIndex];
-                if (beatmapEventData.time >= newSongTime) {
-                    break;
-                }
-
-                newNextEventIndex++;
-            }
-
-            this._beatmapObjectCallbackController.SetField("_nextEventIndex", newNextEventIndex);
-            var notes = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_gameNotePoolContainer");
-            var bombs = this._beatmapObjectManager.GetField<MemoryPoolContainer<BombNoteController>, BasicBeatmapObjectManager>("_bombNotePoolContainer");
-            var walls = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
-            foreach (var note in notes.activeItems) {
-                if (note == null) {
-                    continue;
-                }
-
-                note.hide = false;
-                note.pause = false;
-                note.enabled = true;
-                note.gameObject.SetActive(true);
-                note.Dissolve(0f);
-            }
-            foreach (var bomb in bombs.activeItems) {
-                if (bomb == null) {
-                    continue;
-                }
-
-                bomb.hide = false;
-                bomb.pause = false;
-                bomb.enabled = true;
-                bomb.gameObject.SetActive(true);
-                bomb.Dissolve(0f);
-            }
-            foreach (var wall in walls.activeItems) {
-                if (wall == null) {
-                    continue;
-                }
-
-                wall.hide = false;
-                wall.pause = false;
-                wall.enabled = true;
-                wall.gameObject.SetActive(true);
-                wall.Dissolve(0f);
-            }
             this._audioTimeSyncController.SetField("_prevAudioSamplePos", -1);
             this._audioTimeSyncController.SetField("_songTime", newSongTime);
             this._noteCutSoundEffectManager.SetField("_prevNoteATime", -1f);
             this._noteCutSoundEffectManager.SetField("_prevNoteBTime", -1f);
+
+            this._beatmapCallbacksController.SetField("_startFilterTime", newSongTime + aheadTime);
+            this._beatmapCallbacksController.SetField("_prevSongTime", newSongTime);
+            var dic = this._beatmapCallbacksController.GetField<Dictionary<float, CallbacksInTime>, BeatmapCallbacksController>("_callbacksInTimes");
+            foreach (var item in dic.Values) {
+                item.lastProcessedNode = null;
+            }
+            var basicGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_basicGameNotePoolContainer");
+            var burstSliderHeadGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_burstSliderHeadGameNotePoolContainer");
+            var burstSliderGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderGameNotePoolContainer");
+            var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
+            var bombs = this._beatmapObjectManager.GetField<MemoryPoolContainer<BombNoteController>, BasicBeatmapObjectManager>("_bombNotePoolContainer");
+            var walls = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
+            
+            while (basicGameNotePoolContainer.activeItems.Any()) {
+                var item = basicGameNotePoolContainer.activeItems.First();
+                item.Hide(true);
+                basicGameNotePoolContainer.Despawn(item);
+            }
+            while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
+                var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
+                item.Hide(true);
+                burstSliderHeadGameNotePoolContainer.Despawn(item);
+            }
+            while (burstSliderGameNotePoolContainer.activeItems.Any()) {
+                var item = burstSliderGameNotePoolContainer.activeItems.First();
+                item.Hide(true);
+                burstSliderGameNotePoolContainer.Despawn(item);
+            }
+            while (burstSliderFillPoolContainer.activeItems.Any()) {
+                var item = burstSliderFillPoolContainer.activeItems.First();
+                item.Hide(true);
+                burstSliderFillPoolContainer.Despawn(item);
+            }
+
+            while (bombs.activeItems.Any()) {
+                var item = bombs.activeItems.First();
+                item.Hide(true);
+                bombs.Despawn(item);
+            }
+            while (walls.activeItems.Any()) {
+                var item = walls.activeItems.First();
+                item.Hide(true);
+                walls.Despawn(item);
+            }
         }
     }
 }

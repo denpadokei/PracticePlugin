@@ -1,13 +1,15 @@
-﻿using IPA;
+﻿using HarmonyLib;
+using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
 using PracticePlugin.Installers;
 using SiraUtil.Zenject;
+using System.Reflection;
 using IPALogger = IPA.Logging.Logger;
 
 namespace PracticePlugin
 {
-    [Plugin(RuntimeOptions.SingleStartInit)]
+    [Plugin(RuntimeOptions.DynamicInit)]
     public class Plugin
     {
         internal static IPALogger Log { get; private set; }
@@ -19,7 +21,6 @@ namespace PracticePlugin
         /// </summary>
         public void Init(IPALogger logger, Config conf, Zenjector zenjector)
         {
-
             Log = logger;
             Log.Info("PracticePlugin initialized.");
             Configuration.PluginConfig.Instance = conf.Generated<Configuration.PluginConfig>();
