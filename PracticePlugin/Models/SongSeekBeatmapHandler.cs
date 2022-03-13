@@ -28,7 +28,6 @@ namespace PracticePlugin.Models
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
-            Logger.Debug("OnSongTimeChanged");
             this._audioTimeSyncController.SetField("_prevAudioSamplePos", -1);
             this._audioTimeSyncController.SetField("_songTime", newSongTime);
             this._noteCutSoundEffectManager.SetField("_prevNoteATime", -1f);

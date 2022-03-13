@@ -1,7 +1,6 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
-using PracticePlugin.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -47,12 +46,12 @@ namespace PracticePlugin.Views
         [UIAction("njsFormatter")]
         public string NjsForValue(float value)
         {
-            return value == UIElementsCreator.s_defaultNJS ? $"<u>{value}</u>" : $"{value}";
+            return Mathf.Approximately(value, this._defaultNJS) ? $"<u>{value}</u>" : $"{value}";
         }
         [UIAction("spawnOffsetFormatter")]
         public string OffsetForValue(float value)
         {
-            return value == UIElementsCreator.s_defaultOffset ? $"<u>{value:F2}</u>" : $"{value:F2}";
+            return Mathf.Approximately(value, this._defaultOffset) ? $"<u>{value:F2}</u>" : $"{value:F2}";
         }
 
         [UIAction("#post-parse")]
@@ -63,16 +62,18 @@ namespace PracticePlugin.Views
             }
         }
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
+        private float _defaultNJS;
+        private float _defaultOffset;
         [Inject]
         public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
                 this.Speed = Mathf.RoundToInt(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul * 100);
-                UIElementsCreator.s_defaultNJS = initData.noteJumpMovementSpeed;
-                this.NJS = UIElementsCreator.s_defaultNJS;
-                UIElementsCreator.s_defaultOffset = initData.noteJumpValue;
-                this.Offset = UIElementsCreator.s_defaultOffset;
+                this._defaultNJS = initData.noteJumpMovementSpeed;
+                this.NJS = this._defaultNJS;
+                this._defaultOffset = initData.noteJumpValue;
+                this.Offset = this._defaultOffset;
             }
         }
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)

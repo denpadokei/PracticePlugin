@@ -7,17 +7,15 @@ using Zenject;
 
 namespace PracticePlugin.Models
 {
-    public class UIElementsCreator : MonoBehaviour, IInitializable
+    public class UIElementsCreator : IInitializable
     {
         private SongSeeker _songSeeker;
-        internal static float s_defaultNJS;
-        internal static float s_defaultOffset;
         private GameEnergyCounter _gameEnergyCounter;
         private SongTimeInfoEntity _songTimeInfoEntity;
         public BeatmapObjectSpawnController _spawnController;
         private PracticeUI _practiceUI;
         [Inject]
-        public void Constractor(
+        public UIElementsCreator(
             GameplayCoreSceneSetupData gameplayCoreSceneSetupData,
             BeatmapObjectSpawnController beatmapObjectSpawnController,
             SongTimeInfoEntity songTimeInfoEntity,
@@ -34,7 +32,6 @@ namespace PracticePlugin.Models
         }
         public void Initialize()
         {
-            this.gameObject.AddComponent<RectTransform>();
             if (!this._songTimeInfoEntity.PracticeMode) {
                 return;
             }
@@ -44,7 +41,6 @@ namespace PracticePlugin.Models
             var canvas = GameObject.Find("PauseMenu").transform.Find("Wrapper").transform.Find("MenuWrapper").transform.Find("Canvas");
 
             if (canvas == null) {
-                Logger.Debug("Canvas Null");
                 return;
             }
             var uiObj = new GameObject("PracticePlugin Seeker UI", typeof(RectTransform));
@@ -52,7 +48,6 @@ namespace PracticePlugin.Models
             (uiObj.transform as RectTransform).anchorMin = new Vector2(0, 0);
             (uiObj.transform as RectTransform).anchorMax = new Vector2(1, 1);
             (uiObj.transform as RectTransform).sizeDelta = new Vector2(0, 0);
-            this.transform.SetParent(uiObj.transform as RectTransform, false);
             BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._practiceUI.ResourceName), canvas.gameObject, this._practiceUI);
             uiObj.transform.SetParent(canvas, false);
             uiObj.transform.localScale = new Vector3(1, 1, 1);
