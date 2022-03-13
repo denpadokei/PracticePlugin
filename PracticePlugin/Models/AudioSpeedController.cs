@@ -53,34 +53,6 @@ namespace PracticePlugin.Models
                 }
             }
         }
-        public void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
-        {
-            var spawnMovementData = this._spawnController.GetField<BeatmapObjectSpawnMovementData, BeatmapObjectSpawnController>("_beatmapObjectSpawnMovementData");
-            var initData = this._spawnController.GetField<BeatmapObjectSpawnController.InitData, BeatmapObjectSpawnController>("_initData");
-            var bpm = this._bpmController.currentBpm;
-            if (PluginConfig.Instance.AdjustNJSWithSpeed) {
-                var newNJS = njs * (1 / this.TimeScale);
-                njs = newNJS;
-            }
-            initData.Update(njs, noteJumpStartBeatOffset);
-            this._spawnController.SetField("_isInitialized", false);
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_obstacleDataCallbackWrapper"));
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_noteDataCallbackWrapper"));
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_sliderDataCallbackWrapper"));
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_spawnRotationCallbackWrapper"));
-            this._spawnController.Start();
-        }
-
-        public static void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
-        {
-            timeSync.SetField("_timeScale", newTimeScale);
-            timeSync.SetField("_startSongTime", timeSync.songTime);
-            timeSync.SetField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float, AudioTimeSyncController>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
-            timeSync.SetField("_fixingAudioSyncError", false);
-            timeSync.SetField("_playbackLoopIndex", 0);
-            timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
-        }
-
         public void Update()
         {
             var newPos = (this._audioTimeSyncController.songTime + 0.1f) / this._audioTimeSyncController.songLength;
@@ -88,12 +60,6 @@ namespace PracticePlugin.Models
                 this._songSeeker.PlaybackPosition = this._looperUI.StartTime;
                 this.ApplyPlaybackPosition();
             }
-        }
-        public void ApplyPlaybackPosition()
-        {
-            this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
-            this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -130,14 +96,12 @@ namespace PracticePlugin.Models
             else {
                 this._mixer.musicPitch = 1f;
             }
-            ResetTimeSync(this._audioTimeSyncController, field, newInitData);
+            this.ResetTimeSync(this._audioTimeSyncController, field, newInitData);
         }
-
         private bool IsEqualToOne(float value)
         {
             return Mathf.Approximately(value, 1f);
         }
-
         private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(PracticeUI.Offset) || e.PropertyName == nameof(PracticeUI.NJS)) {
@@ -162,6 +126,38 @@ namespace PracticePlugin.Models
                     this._songTimeInfoEntity.ShowFailTextNext = false;
                     break;
             }
+        }
+        private void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
+        {
+            var spawnMovementData = this._spawnController.GetField<BeatmapObjectSpawnMovementData, BeatmapObjectSpawnController>("_beatmapObjectSpawnMovementData");
+            var initData = this._spawnController.GetField<BeatmapObjectSpawnController.InitData, BeatmapObjectSpawnController>("_initData");
+            var bpm = this._bpmController.currentBpm;
+            if (PluginConfig.Instance.AdjustNJSWithSpeed) {
+                var newNJS = njs * (1 / this.TimeScale);
+                njs = newNJS;
+            }
+            initData.Update(njs, noteJumpStartBeatOffset);
+            this._spawnController.SetField("_isInitialized", false);
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_obstacleDataCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_noteDataCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_sliderDataCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_spawnRotationCallbackWrapper"));
+            this._spawnController.Start();
+        }
+        private void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
+        {
+            timeSync.SetField("_timeScale", newTimeScale);
+            timeSync.SetField("_startSongTime", timeSync.songTime);
+            timeSync.SetField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float, AudioTimeSyncController>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
+            timeSync.SetField("_fixingAudioSyncError", false);
+            timeSync.SetField("_playbackLoopIndex", 0);
+            timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
+        }
+        private void ApplyPlaybackPosition()
+        {
+            this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
+            this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
