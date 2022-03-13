@@ -70,32 +70,30 @@ namespace PracticePlugin.Models
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_spawnRotationCallbackWrapper"));
             this._spawnController.Start();
         }
-        private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+
+        public static void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
-            if (e.PropertyName == nameof(PracticeUI.Offset) || e.PropertyName == nameof(PracticeUI.NJS)) {
-                this.UpdateSpawnMovementData(this._practiceUI.NJS, this._practiceUI.Offset);
-            }
-            else if (e.PropertyName == nameof(PracticeUI.Speed)) {
-                Logger.Debug($"{this._practiceUI.Speed}");
-                this.TimeScale = (float)(this._practiceUI.Speed / 100d);
+            timeSync.SetField("_timeScale", newTimeScale);
+            timeSync.SetField("_startSongTime", timeSync.songTime);
+            timeSync.SetField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float, AudioTimeSyncController>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
+            timeSync.SetField("_fixingAudioSyncError", false);
+            timeSync.SetField("_playbackLoopIndex", 0);
+            timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
+        }
+
+        public void Update()
+        {
+            var newPos = (this._audioTimeSyncController.songTime + 0.1f) / this._audioTimeSyncController.songLength;
+            if (newPos >= this._looperUI.EndTime && this._looperUI.EndTime != 1) {
+                this._songSeeker.PlaybackPosition = this._looperUI.StartTime;
+                this.ApplyPlaybackPosition();
             }
         }
-        private void LevelFinisher_StandardLevelFinished(LevelCompletionResults obj)
+        public void ApplyPlaybackPosition()
         {
-            Logger.Debug("LevelFinisher_StandardLevelFinished");
-            switch (obj.levelEndStateType) {
-                case LevelCompletionResults.LevelEndStateType.Failed:
-                    var endTime = obj.endSongTime;
-                    var length = this._audioTimeSyncController.songLength;
-                    this._songTimeInfoEntity.FailTimeText = $@"<color=#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
-                    this._songTimeInfoEntity.ShowFailTextNext = true;
-                    break;
-                case LevelCompletionResults.LevelEndStateType.Incomplete:
-                case LevelCompletionResults.LevelEndStateType.Cleared:
-                default:
-                    this._songTimeInfoEntity.ShowFailTextNext = false;
-                    break;
-            }
+            this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
+            this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -122,7 +120,7 @@ namespace PracticePlugin.Models
             this._audioTimeSyncController.SetField("_initData", newInitData);
             //Chipmunk Removal as per base game
             if (!PluginConfig.Instance.DisablePitchCorrection) {
-                if (field == 1f) {
+                if (this.IsEqualToOne(field)) {
                     this._mixer.musicPitch = 1;
                 }
                 else {
@@ -133,72 +131,37 @@ namespace PracticePlugin.Models
                 this._mixer.musicPitch = 1f;
             }
             ResetTimeSync(this._audioTimeSyncController, field, newInitData);
-#if false
-            //       AudioTimeSync.SetField("_timeScale", value);
-            //        AudioTimeSync.Init(_songAudio.clip, _songAudio.time, AudioTimeSync.GetField<float>("_songTimeOffset"), value);
-            if (field == 1f)
-                _mixer.musicPitch = 1;
-            else
-                _mixer.musicPitch = 1f / field;
-            if (!IsEqualToOne(field)) {
-
-                if (AudioTimeSync != null) {
-                    //           AudioTimeSync.forcedNoAudioSync = true;
-                }
-            }
-            else {
-                if (AudioTimeSync != null) {
-                    //           AudioTimeSync.forcedNoAudioSync = false;
-                }
-            }
-            if (AudioTimeSync != null) {
-                //     AudioTimeSync.SetField("_timeScale", _timeScale); // = _timeScale;
-                //     AudioTimeSync.Init(_songAudio.clip, _songAudio.time, 
-                //           AudioTimeSync.GetField<float>("_songTimeOffset") - AudioTimeSync.GetField<FloatSO>("_audioLatency").value, _timeScale);
-                Logger.Debug("Called TimeScale");
-
-                if (_songAudio != null) {
-                    _songAudio.pitch = field;
-                }
-                //         AudioTimeSync.forcedNoAudioSync = true;
-                //         float num = AudioTimeSync.GetField<float>("_startSongTime") + AudioTimeSync.GetField<float>("_songTimeOffset");
-                //     AudioTimeSync.SetField("_audioStartTimeOffsetSinceStart", (Time.timeSinceLevelLoad * _timeScale) - num);
-                //   AudioTimeSync.SetField("_fixingAudioSyncError", false);
-                //   AudioTimeSync.SetField("_prevAudioSamplePos", _songAudio.timeSamples);
-                //   AudioTimeSync.SetField("_playbackLoopIndex", 0);
-                //          AudioTimeSync.SetField("_dspTimeOffset", AudioSettings.dspTime - (double)num);
-                //    AudioTimeSync.SetField("_timeScale", _timeScale); // = _timeScale;
-            }
-#endif
         }
 
-        //private bool IsEqualToOne(float value)
-        //{
-        //    return Math.Abs(value - 1) < 0.000000001f;
-        //}
-        public static void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
+        private bool IsEqualToOne(float value)
         {
-            timeSync.SetField("_timeScale", newTimeScale);
-            timeSync.SetField("_startSongTime", timeSync.songTime);
-            timeSync.SetField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float, AudioTimeSyncController>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
-            timeSync.SetField("_fixingAudioSyncError", false);
-            timeSync.SetField("_playbackLoopIndex", 0);
-            timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
+            return Mathf.Approximately(value, 1f);
         }
 
-        public void Update()
+        private void PracticeUI_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            var newPos = (this._audioTimeSyncController.songTime + 0.1f) / this._audioTimeSyncController.songLength;
-            if (newPos >= this._looperUI.EndTime && this._looperUI.EndTime != 1) {
-                this._songSeeker.PlaybackPosition = this._looperUI.StartTime;
-                this.ApplyPlaybackPosition();
+            if (e.PropertyName == nameof(PracticeUI.Offset) || e.PropertyName == nameof(PracticeUI.NJS)) {
+                this.UpdateSpawnMovementData(this._practiceUI.NJS, this._practiceUI.Offset);
+            }
+            else if (e.PropertyName == nameof(PracticeUI.Speed)) {
+                this.TimeScale = (float)(this._practiceUI.Speed / 100d);
             }
         }
-        public void ApplyPlaybackPosition()
+        private void LevelFinisher_StandardLevelFinished(LevelCompletionResults obj)
         {
-            this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
-            this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
+            switch (obj.levelEndStateType) {
+                case LevelCompletionResults.LevelEndStateType.Failed:
+                    var endTime = obj.endSongTime;
+                    var length = this._audioTimeSyncController.songLength;
+                    this._songTimeInfoEntity.FailTimeText = $@"<color=#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
+                    this._songTimeInfoEntity.ShowFailTextNext = true;
+                    break;
+                case LevelCompletionResults.LevelEndStateType.Incomplete:
+                case LevelCompletionResults.LevelEndStateType.Cleared:
+                default:
+                    this._songTimeInfoEntity.ShowFailTextNext = false;
+                    break;
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -256,24 +219,13 @@ namespace PracticePlugin.Models
         {
             if (!this._disposedValue) {
                 if (disposing) {
-                    // TODO: マネージド状態を破棄します (マネージド オブジェクト)
                     this._levelFinisher.StandardLevelFinished -= this.LevelFinisher_StandardLevelFinished;
                     this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
                     this._mixer = null;
                 }
-
-                // TODO: アンマネージド リソース (アンマネージド オブジェクト) を解放し、ファイナライザーをオーバーライドします
-                // TODO: 大きなフィールドを null に設定します
                 this._disposedValue = true;
             }
         }
-
-        // // TODO: 'Dispose(bool disposing)' にアンマネージド リソースを解放するコードが含まれる場合にのみ、ファイナライザーをオーバーライドします
-        // ~AudioSpeedController()
-        // {
-        //     // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-        //     Dispose(disposing: false);
-        // }
 
         public void Dispose()
         {

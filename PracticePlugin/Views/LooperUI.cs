@@ -43,7 +43,6 @@ namespace PracticePlugin.Views
 
         public void Initialize()
         {
-            Logger.Debug("Initialize");
             this.gameObject.AddComponent<RectTransform>();
             if (this._songTimeInfo.PlayingNewSong) {
                 s_prevStartTime = 0;

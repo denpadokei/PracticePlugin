@@ -54,7 +54,6 @@ namespace PracticePlugin.Views
         }
         public void Initialize()
         {
-            Logger.Debug("Initialize");
             this.gameObject.AddComponent<RectTransform>();
             var tex = Texture2D.whiteTexture;
             var sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 100, 1);

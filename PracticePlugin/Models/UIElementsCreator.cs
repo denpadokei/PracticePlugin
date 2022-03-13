@@ -10,8 +10,6 @@ namespace PracticePlugin.Models
     public class UIElementsCreator : MonoBehaviour, IInitializable
     {
         private SongSeeker _songSeeker;
-        internal static float s_defaultNJS;
-        internal static float s_defaultOffset;
         private GameEnergyCounter _gameEnergyCounter;
         private SongTimeInfoEntity _songTimeInfoEntity;
         public BeatmapObjectSpawnController _spawnController;
@@ -44,7 +42,6 @@ namespace PracticePlugin.Models
             var canvas = GameObject.Find("PauseMenu").transform.Find("Wrapper").transform.Find("MenuWrapper").transform.Find("Canvas");
 
             if (canvas == null) {
-                Logger.Debug("Canvas Null");
                 return;
             }
             var uiObj = new GameObject("PracticePlugin Seeker UI", typeof(RectTransform));
