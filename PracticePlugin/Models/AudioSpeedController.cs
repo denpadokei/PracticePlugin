@@ -45,7 +45,7 @@ namespace PracticePlugin.Models
                 this.TimeScale = Mathf.Clamp(this.TimeScale, 1, SpeedMaxSize);
             }
             if (this._songTimeInfoEntity.PracticeMode) {
-                if (this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul != 1f) {
+                if (!this.IsEqualToOne(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul)) {
                     this.TimeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
                 }
                 else {
@@ -55,8 +55,11 @@ namespace PracticePlugin.Models
         }
         public void Update()
         {
+            if (!this._songTimeInfoEntity.PracticeMode) {
+                return;
+            }
             var newPos = (this._audioTimeSyncController.songTime + 0.1f) / this._audioTimeSyncController.songLength;
-            if (newPos >= this._looperUI.EndTime && this._looperUI.EndTime != 1) {
+            if (newPos >= this._looperUI.EndTime && !this.IsEqualToOne(this._looperUI.EndTime)) {
                 this._songSeeker.PlaybackPosition = this._looperUI.StartTime;
                 this.ApplyPlaybackPosition();
             }

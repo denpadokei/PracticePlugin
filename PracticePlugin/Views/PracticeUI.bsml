@@ -2,6 +2,6 @@
   <settings-container child-control-width='true' child-expand-width='true' anchor-pos-y='-52'>
     <increment-setting value='speed' formatter='speedFormatter' apply-on-change='true' text='Speed' increment='5' integer-only='true' min='10' max='500'></increment-setting>
     <increment-setting formatter='njsFormatter' value='njs' apply-on-change='true' text='NJS' increment='1' min='1' max='50' integer-only='true'></increment-setting>
-    <increment-setting formatter='spawnOffsetFormatter' value='offset' apply-on-change='true' text='Spawn Offset' increment='0.1' min='-50' max='50' integer-only='false'></increment-setting>
+    <increment-setting formatter='spawnOffsetFormatter' value='offset' apply-on-change='true' text='Spawn Offset' increment='0.1' min='-10' max='20' integer-only='false'></increment-setting>
   </settings-container>
 </bg>

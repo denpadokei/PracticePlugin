@@ -11,7 +11,7 @@ namespace PracticePlugin.Installers
             this.Container.BindInterfacesAndSelfTo<PracticeUI>().FromNewComponentAsViewController().AsCached();
             this.Container.BindInterfacesAndSelfTo<LooperUI>().FromNewComponentOnNewGameObject().AsCached();
             this.Container.BindInterfacesAndSelfTo<SongSeeker>().FromNewComponentOnNewGameObject().AsCached();
-            this.Container.BindInterfacesAndSelfTo<UIElementsCreator>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<UIElementsCreator>().AsCached().NonLazy();
             this.Container.BindInterfacesAndSelfTo<AudioSpeedController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
             this.Container.BindInterfacesAndSelfTo<SongSeekBeatmapHandler>().AsCached();
         }
