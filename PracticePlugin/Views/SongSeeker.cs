@@ -40,13 +40,15 @@ namespace PracticePlugin.Views
 
         private const float s_looperUITopMargin = -5f;
         internal int _startTimeSamples;
+        private bool _isPractice = false;
         [Inject]
-        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI)
+        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, SongTimeInfoEntity songTimeInfoEntity)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeekBeatmapHandler = songSeekBeatmapHandler;
             this._looperUI = looperUI;
             this._songAudioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
+            this._isPractice = songTimeInfoEntity.PracticeMode;
         }
         public void SetPlaybackPosition(float value, float start, float end)
         {
@@ -149,6 +151,9 @@ namespace PracticePlugin.Views
 
         public void Update()
         {
+            if (!this._isPractice) {
+                return;
+            }
             if (this._looperUI == null || this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
             }
@@ -160,6 +165,9 @@ namespace PracticePlugin.Views
 
         public void LateUpdate()
         {
+            if (!this._isPractice) {
+                return;
+            }
             if (this._looperUI == null || this._seekBar == null || this._seekCursor == null) {
                 return;
             }
