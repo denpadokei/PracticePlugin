@@ -42,13 +42,13 @@ namespace PracticePlugin.Views
         internal int _startTimeSamples;
         private bool _isPractice = false;
         [Inject]
-        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, SongTimeInfoEntity songTimeInfoEntity)
+        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, GameplayCoreSceneSetupData gameplayCoreSceneSetupData)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeekBeatmapHandler = songSeekBeatmapHandler;
             this._looperUI = looperUI;
             this._songAudioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
-            this._isPractice = songTimeInfoEntity.PracticeMode;
+            this._isPractice = gameplayCoreSceneSetupData.practiceSettings != null;
         }
         public void SetPlaybackPosition(float value, float start, float end)
         {
