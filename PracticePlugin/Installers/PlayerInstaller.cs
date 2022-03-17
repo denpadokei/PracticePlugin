@@ -8,6 +8,10 @@ namespace PracticePlugin.Installers
     {
         public override void InstallBindings()
         {
+            this._songTimeInfoEntity.PracticeMode = this._gameplayCoreSceneSetupData.practiceSettings != null;
+            if (!this._songTimeInfoEntity.PracticeMode) {
+                return;
+            }
             this.Container.BindInterfacesAndSelfTo<PracticeUI>().FromNewComponentAsViewController().AsCached();
             this.Container.BindInterfacesAndSelfTo<LooperUI>().FromNewComponentOnNewGameObject().AsCached();
             this.Container.BindInterfacesAndSelfTo<SongSeeker>().FromNewComponentOnNewGameObject().AsCached();
@@ -15,5 +19,10 @@ namespace PracticePlugin.Installers
             this.Container.BindInterfacesAndSelfTo<AudioSpeedController>().FromNewComponentOnNewGameObject().AsCached().NonLazy();
             this.Container.BindInterfacesAndSelfTo<SongSeekBeatmapHandler>().AsCached();
         }
+
+        [Inject]
+        private readonly GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
+        [Inject]
+        private readonly SongTimeInfoEntity _songTimeInfoEntity;
     }
 }

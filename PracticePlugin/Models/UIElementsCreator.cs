@@ -16,7 +16,6 @@ namespace PracticePlugin.Models
         private PracticeUI _practiceUI;
         [Inject]
         public UIElementsCreator(
-            GameplayCoreSceneSetupData gameplayCoreSceneSetupData,
             BeatmapObjectSpawnController beatmapObjectSpawnController,
             SongTimeInfoEntity songTimeInfoEntity,
             SongSeeker songSeeker,
@@ -28,7 +27,6 @@ namespace PracticePlugin.Models
             this._songSeeker = songSeeker;
             this._practiceUI = practiceUI;
             this._gameEnergyCounter = gameEnergyCounter;
-            songTimeInfoEntity.PracticeMode = gameplayCoreSceneSetupData.practiceSettings != null;
         }
         public void Initialize()
         {
