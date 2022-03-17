@@ -8,6 +8,7 @@ namespace PracticePlugin.Installers
     {
         public override void InstallBindings()
         {
+            this.Container.BindInterfacesAndSelfTo<LevelFinishChecker>().AsCached().NonLazy();
             this._songTimeInfoEntity.PracticeMode = this._gameplayCoreSceneSetupData.practiceSettings != null;
             if (!this._songTimeInfoEntity.PracticeMode) {
                 return;

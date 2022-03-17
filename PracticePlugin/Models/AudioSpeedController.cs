@@ -114,22 +114,7 @@ namespace PracticePlugin.Models
                 this.TimeScale = (float)(this._practiceUI.Speed / 100d);
             }
         }
-        private void LevelFinisher_StandardLevelFinished(LevelCompletionResults obj)
-        {
-            switch (obj.levelEndStateType) {
-                case LevelCompletionResults.LevelEndStateType.Failed:
-                    var endTime = obj.endSongTime;
-                    var length = this._audioTimeSyncController.songLength;
-                    this._songTimeInfoEntity.FailTimeText = $@"<color=#ff0000>Failed At</color> - {Math.Floor(endTime / 60):N0}:{Math.Floor(endTime % 60):00}  /  {Math.Floor(length / 60):N0}:{Math.Floor(length % 60):00}";
-                    this._songTimeInfoEntity.ShowFailTextNext = true;
-                    break;
-                case LevelCompletionResults.LevelEndStateType.Incomplete:
-                case LevelCompletionResults.LevelEndStateType.Cleared:
-                default:
-                    this._songTimeInfoEntity.ShowFailTextNext = false;
-                    break;
-            }
-        }
+
         private void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
         {
             var spawnMovementData = this._spawnController.GetField<BeatmapObjectSpawnMovementData, BeatmapObjectSpawnController>("_beatmapObjectSpawnMovementData");
@@ -180,7 +165,6 @@ namespace PracticePlugin.Models
         private LooperUI _looperUI;
         private SongSeeker _songSeeker;
         private PracticeUI _practiceUI;
-        private ILevelFinisher _levelFinisher;
         private bool _disposedValue;
         private const float s_aheadTime = 1f;
         private IBpmController _bpmController;
@@ -189,7 +173,7 @@ namespace PracticePlugin.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(AudioManagerSO audioManagerSO, ILevelFinisher levelFinisher, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController)
+        public void Constractor(AudioManagerSO audioManagerSO, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
@@ -200,7 +184,6 @@ namespace PracticePlugin.Models
             this._practiceUI = practiceUI;
             this._songSeeker = songSeeker;
             this._mixer = audioManagerSO;
-            this._levelFinisher = levelFinisher;
             this._bpmController = bpmController;
             this._beatmapCallbackController = beatmapCallbacksController;
             if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
@@ -211,14 +194,11 @@ namespace PracticePlugin.Models
             else {
                 this._songTimeInfoEntity.PlayingNewSong = false;
             }
-
-            this._levelFinisher.StandardLevelFinished += this.LevelFinisher_StandardLevelFinished;
         }
         protected virtual void Dispose(bool disposing)
         {
             if (!this._disposedValue) {
                 if (disposing) {
-                    this._levelFinisher.StandardLevelFinished -= this.LevelFinisher_StandardLevelFinished;
                     this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
                     this._mixer = null;
                 }

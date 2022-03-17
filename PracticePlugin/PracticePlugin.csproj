@@ -114,6 +114,7 @@
     <Compile Include="Installers\PracticeAppInstaller.cs" />
     <Compile Include="Installers\PracticeMenuInstaller.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Models\LevelFinishChecker.cs" />
     <Compile Include="Models\LooperCursor.cs" />
     <Compile Include="Views\LooperUI.cs" />
     <Compile Include="Models\AudioSpeedController.cs" />
