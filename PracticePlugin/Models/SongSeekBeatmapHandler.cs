@@ -13,16 +13,13 @@ namespace PracticePlugin.Models
             AudioTimeSyncController audioTimeSyncController,
             BeatmapCallbacksController beatmapCallbacksController,
             NoteCutSoundEffectManager noteCutSoundEffectManager,
-            IReadonlyBeatmapData beatmapData,
-            BasicBeatmapObjectManager beatmapObjectManager)
+            IReadonlyBeatmapData beatmapData)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._beatmapCallbacksController = beatmapCallbacksController;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
-            this._beatmapObjectManager = beatmapObjectManager;
         }
         private readonly BeatmapCallbacksController _beatmapCallbacksController;
-        private readonly BasicBeatmapObjectManager _beatmapObjectManager;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
 
@@ -39,44 +36,7 @@ namespace PracticePlugin.Models
             foreach (var item in dic.Values) {
                 item.lastProcessedNode = null;
             }
-            var basicGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_basicGameNotePoolContainer");
-            var burstSliderHeadGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_burstSliderHeadGameNotePoolContainer");
-            var burstSliderGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderGameNotePoolContainer");
-            var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
-            var bombs = this._beatmapObjectManager.GetField<MemoryPoolContainer<BombNoteController>, BasicBeatmapObjectManager>("_bombNotePoolContainer");
-            var walls = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
-
-            while (basicGameNotePoolContainer.activeItems.Any()) {
-                var item = basicGameNotePoolContainer.activeItems.First();
-                item.Hide(true);
-                basicGameNotePoolContainer.Despawn(item);
-            }
-            while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
-                var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
-                item.Hide(true);
-                burstSliderHeadGameNotePoolContainer.Despawn(item);
-            }
-            while (burstSliderGameNotePoolContainer.activeItems.Any()) {
-                var item = burstSliderGameNotePoolContainer.activeItems.First();
-                item.Hide(true);
-                burstSliderGameNotePoolContainer.Despawn(item);
-            }
-            while (burstSliderFillPoolContainer.activeItems.Any()) {
-                var item = burstSliderFillPoolContainer.activeItems.First();
-                item.Hide(true);
-                burstSliderFillPoolContainer.Despawn(item);
-            }
-
-            while (bombs.activeItems.Any()) {
-                var item = bombs.activeItems.First();
-                item.Hide(true);
-                bombs.Despawn(item);
-            }
-            while (walls.activeItems.Any()) {
-                var item = walls.activeItems.First();
-                item.Hide(true);
-                walls.Despawn(item);
-            }
+            // Thank you Kyle 1413!
         }
     }
 }
