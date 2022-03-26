@@ -115,13 +115,19 @@ namespace PracticePlugin.Models
                 var newNJS = njs * (1 / this.TimeScale);
                 njs = newNJS;
             }
-            initData.Update(njs, noteJumpStartBeatOffset);
-            this._spawnController.SetField("_isInitialized", false);
+            var oldAheadTime = spawnMovementData.spawnAheadTime;    
+            var lastProcessedNode = this._beatmapCallbackController.GetLastNode(oldAheadTime);
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_obstacleDataCallbackWrapper"));
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_noteDataCallbackWrapper"));
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_sliderDataCallbackWrapper"));
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_spawnRotationCallbackWrapper"));
+            initData.Update(njs, noteJumpStartBeatOffset);
+            this._spawnController.SetField("_isInitialized", false);
             this._spawnController.Start();
+            var newAheadTime = spawnMovementData.spawnAheadTime;
+            if (lastProcessedNode != null) {
+                this._beatmapCallbackController.SetNewLastNodeForCallback(lastProcessedNode, newAheadTime);
+            }   
         }
         private void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
