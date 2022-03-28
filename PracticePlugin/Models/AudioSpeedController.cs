@@ -2,7 +2,6 @@
 using PracticePlugin.Configuration;
 using PracticePlugin.Extentions;
 using PracticePlugin.Views;
-using SiraUtil.Services;
 using System;
 using UnityEngine;
 using Zenject;
@@ -29,20 +28,16 @@ namespace PracticePlugin.Models
             }
             this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
-
-
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
-            if (!this._songTimeInfoEntity.PracticeMode) {
-                this.TimeScale = Mathf.Clamp(this.TimeScale, 1, SpeedMaxSize);
-            }
             if (this._songTimeInfoEntity.PracticeMode) {
                 if (!this.IsEqualToOne(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul)) {
-                    this.TimeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
+                    this._timeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
                 }
                 else {
-                    this.TimeScale = this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
+                    this._timeScale = this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
                 }
             }
+            this.ChangeMusicPitch(this.TimeScale);
         }
         public void Update()
         {
@@ -79,17 +74,7 @@ namespace PracticePlugin.Models
                 field);
             this._audioTimeSyncController.SetField("_initData", newInitData);
             //Chipmunk Removal as per base game
-            if (!PluginConfig.Instance.DisablePitchCorrection) {
-                if (this.IsEqualToOne(field)) {
-                    this._mixer.musicPitch = 1;
-                }
-                else {
-                    this._mixer.musicPitch = 1f / field;
-                }
-            }
-            else {
-                this._mixer.musicPitch = 1f;
-            }
+            this.ChangeMusicPitch(field);
             this.ResetTimeSync(this._audioTimeSyncController, field, newInitData);
         }
         private bool IsEqualToOne(float value)
@@ -115,7 +100,7 @@ namespace PracticePlugin.Models
                 var newNJS = njs * (1 / this.TimeScale);
                 njs = newNJS;
             }
-            var oldAheadTime = spawnMovementData.spawnAheadTime;    
+            var oldAheadTime = spawnMovementData.spawnAheadTime;
             var lastProcessedNode = this._beatmapCallbackController.GetLastNode(oldAheadTime);
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_obstacleDataCallbackWrapper"));
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_noteDataCallbackWrapper"));
@@ -127,7 +112,7 @@ namespace PracticePlugin.Models
             var newAheadTime = spawnMovementData.spawnAheadTime;
             if (lastProcessedNode != null) {
                 this._beatmapCallbackController.SetNewLastNodeForCallback(lastProcessedNode, newAheadTime);
-            }   
+            }
         }
         private void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
@@ -143,6 +128,20 @@ namespace PracticePlugin.Models
             this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
             this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
             this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
+        }
+        private void ChangeMusicPitch(float pitch)
+        {
+            if (!PluginConfig.Instance.DisablePitchCorrection) {
+                if (this.IsEqualToOne(pitch)) {
+                    this._mixer.musicPitch = 1;
+                }
+                else {
+                    this._mixer.musicPitch = 1f / pitch;
+                }
+            }
+            else {
+                this._mixer.musicPitch = 1f;
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
