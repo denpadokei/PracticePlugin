@@ -5,7 +5,4 @@
 		<ImportBSMTTargets>True</ImportBSMTTargets>
 		<BSMTProjectType>BSIPA</BSMTProjectType>
 	</PropertyGroup>
-	<ItemGroup>
-		<OutputCopy Include="$(TargetPath)"	OutputPath="Plugins\$(TargetName).dll"/>
-	</ItemGroup>
 </Project>

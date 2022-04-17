@@ -9,11 +9,11 @@ namespace PracticePlugin.Models
 {
     public class UIElementsCreator : IInitializable
     {
-        private SongSeeker _songSeeker;
-        private GameEnergyCounter _gameEnergyCounter;
-        private SongTimeInfoEntity _songTimeInfoEntity;
-        public BeatmapObjectSpawnController _spawnController;
-        private PracticeUI _practiceUI;
+        private readonly SongSeeker _songSeeker;
+        private readonly GameEnergyCounter _gameEnergyCounter;
+        private readonly SongTimeInfoEntity _songTimeInfoEntity;
+        private readonly BeatmapObjectSpawnController _spawnController;
+        private readonly PracticeUI _practiceUI;
         [Inject]
         public UIElementsCreator(
             BeatmapObjectSpawnController beatmapObjectSpawnController,

@@ -33,6 +33,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>$(BeatSaberDir)\Libs\0Harmony.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="BeatmapCore">
       <HintPath>$(BeatSaberDir)Beat Saber_Data\Managed\BeatmapCore.dll</HintPath>
     </Reference>
@@ -117,6 +122,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Models\LevelFinishChecker.cs" />
     <Compile Include="Models\LooperCursor.cs" />
+    <Compile Include="ScoreSaberPatch\FixDictionary.cs" />
     <Compile Include="Views\LooperUI.cs" />
     <Compile Include="Models\AudioSpeedController.cs" />
     <Compile Include="Views\ResultViewTextController.cs" />
