@@ -1,6 +1,9 @@
-﻿using IPA.Utilities;
+﻿using HarmonyLib;
+using IPA.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -13,15 +16,19 @@ namespace PracticePlugin.Models
             AudioTimeSyncController audioTimeSyncController,
             BeatmapCallbacksController beatmapCallbacksController,
             NoteCutSoundEffectManager noteCutSoundEffectManager,
+            BasicBeatmapObjectManager beatmapObjectManager,
             IReadonlyBeatmapData beatmapData)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._beatmapCallbacksController = beatmapCallbacksController;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
+            this._beatmapObjectManager = beatmapObjectManager;
         }
         private readonly BeatmapCallbacksController _beatmapCallbacksController;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
+        private readonly BasicBeatmapObjectManager _beatmapObjectManager;
+        private readonly MethodInfo _noteControllerDespawn = AccessTools.Method(typeof(BasicBeatmapObjectManager), "Despawn", new Type[] { typeof(NoteController) });
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
@@ -37,6 +44,26 @@ namespace PracticePlugin.Models
                 item.lastProcessedNode = null;
             }
             // Thank you Kyle 1413!
+            var basicGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_basicGameNotePoolContainer");
+            var burstSliderHeadGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_burstSliderHeadGameNotePoolContainer");
+            var burstSliderGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderGameNotePoolContainer");
+            var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
+            while (basicGameNotePoolContainer.activeItems.Any()) {
+                var item = basicGameNotePoolContainer.activeItems.First();
+                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+            }
+            while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
+                var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
+                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+            }
+            while (burstSliderGameNotePoolContainer.activeItems.Any()) {
+                var item = burstSliderGameNotePoolContainer.activeItems.First();
+                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+            }
+            while (burstSliderFillPoolContainer.activeItems.Any()) {
+                var item = burstSliderFillPoolContainer.activeItems.First();
+                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+            }
         }
     }
 }
