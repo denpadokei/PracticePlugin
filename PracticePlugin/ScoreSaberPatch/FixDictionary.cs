@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace PracticePlugin.ScoreSaberPatch
 {
-    [HarmonyPatch("#=zHkuUGXA1luT1koIiBepVdI_Dj7FMl0reWBqwDlPUwxmb, ScoreSaber", "#=zL7OazZ1DyUDE")]
+    [HarmonyPatch("#=z0To8xD2o7PUBhMeqC4_MpikamypKfp9ldWNLkovKYejS, ScoreSaber", "#=zBqyaVYCpo32L")]
     internal class FixDictionary
     {
         private static FieldInfo s_fieldInfo = null;
@@ -20,7 +20,7 @@ namespace PracticePlugin.ScoreSaberPatch
         public static bool AddNoteDataPrefix(ref NoteController noteController, object __instance, ref bool __runOriginal)
         {
             if (s_fieldInfo == null) {
-                s_fieldInfo = __instance.GetType().GetField("#=zs1Fp7k2RKGAt8jSG4V00_BtPUfei", BindingFlags.NonPublic | BindingFlags.Instance);
+                s_fieldInfo = __instance.GetType().GetField("#=z6uBnbnZ4fAzjF7kOKAunatlCe7mI", BindingFlags.NonPublic | BindingFlags.Instance);
             }
             var dic = (Dictionary<NoteData, NoteCutInfo>)s_fieldInfo.GetValue(__instance);
             if (dic.ContainsKey(noteController.noteData)) {

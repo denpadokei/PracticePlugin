@@ -46,7 +46,9 @@ namespace PracticePlugin
         [OnEnable]
         public void OnEnable()
         {
-            if (PluginManager.GetPlugin("ScoreSaber") == null) {
+            var scoreSaber = PluginManager.GetPlugin("ScoreSaber");
+            if (scoreSaber == null || scoreSaber.HVersion != new Hive.Versioning.Version("3.2.8")) {
+                Logger.Error($"Invalid ScoreSaber version! : {scoreSaber?.HVersion}");
                 return;
             }
             try {
