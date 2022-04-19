@@ -2,7 +2,6 @@
 using IPA;
 using IPA.Config;
 using IPA.Config.Stores;
-using IPA.Loader;
 using PracticePlugin.Installers;
 using SiraUtil.Zenject;
 using System;
@@ -46,11 +45,6 @@ namespace PracticePlugin
         [OnEnable]
         public void OnEnable()
         {
-            var scoreSaber = PluginManager.GetPlugin("ScoreSaber");
-            if (scoreSaber == null || scoreSaber.HVersion != new Hive.Versioning.Version("3.2.8")) {
-                Logger.Error($"Invalid ScoreSaber version! : {scoreSaber?.HVersion}");
-                return;
-            }
             try {
                 this._harmony = Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
             }
