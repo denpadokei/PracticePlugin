@@ -49,6 +49,7 @@ namespace PracticePlugin.Models
             var burstSliderHeadGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_burstSliderHeadGameNotePoolContainer");
             var burstSliderGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderGameNotePoolContainer");
             var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
+            var cutSoundPoolContainer = this._noteCutSoundEffectManager.GetField<MemoryPoolContainer<NoteCutSoundEffect>, NoteCutSoundEffectManager>("_noteCutSoundEffectPoolContainer");
             while (basicGameNotePoolContainer.activeItems.Any()) {
                 var item = basicGameNotePoolContainer.activeItems.First();
                 this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
@@ -64,6 +65,11 @@ namespace PracticePlugin.Models
             while (burstSliderFillPoolContainer.activeItems.Any()) {
                 var item = burstSliderFillPoolContainer.activeItems.First();
                 this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+            }
+            while (cutSoundPoolContainer.activeItems.Any()) {
+                var item = cutSoundPoolContainer.activeItems.First();
+                item.StopPlayingAndFinish();
+                this._noteCutSoundEffectManager.HandleNoteCutSoundEffectDidFinish(item);
             }
             foreach (var mang in Resources.FindObjectsOfTypeAll<SliderInteractionManager>()) {
                 var activeSlider = mang.GetField<List<SliderController>, SliderInteractionManager>("_activeSliders");
