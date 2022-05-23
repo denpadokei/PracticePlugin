@@ -3,10 +3,7 @@ using PracticePlugin.Configuration;
 using PracticePlugin.Extentions;
 using PracticePlugin.Views;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.XR;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -131,14 +128,6 @@ namespace PracticePlugin.Models
             this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
             this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
             this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
-            foreach (var keyValuePair in this._hapticFeedbackController.GetField<Dictionary<XRNode, Dictionary<object, HapticFeedbackController.RumbleData>>, HapticFeedbackController>("_rumblesByNode")) {
-                foreach (var rumbleData in keyValuePair.Value.Values) {
-                    rumbleData.active = false;
-                }
-            }
-            foreach (var key in Enum.GetValues(typeof(XRNode)).OfType<XRNode>()) {
-                this._vRPlatformHelper.StopHaptics(key);
-            }
         }
         private void ChangeMusicPitch(float pitch)
         {
@@ -176,13 +165,11 @@ namespace PracticePlugin.Models
         private const float s_aheadTime = 1f;
         private IBpmController _bpmController;
         private BeatmapCallbacksController _beatmapCallbackController;
-        IVRPlatformHelper _vRPlatformHelper;
-        private HapticFeedbackController _hapticFeedbackController;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(AudioManagerSO audioManagerSO, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController, IVRPlatformHelper vRPlatformHelper, HapticFeedbackController hapticFeedbackController)
+        public void Constractor(AudioManagerSO audioManagerSO, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
@@ -195,8 +182,6 @@ namespace PracticePlugin.Models
             this._mixer = audioManagerSO;
             this._bpmController = bpmController;
             this._beatmapCallbackController = beatmapCallbacksController;
-            this._vRPlatformHelper = vRPlatformHelper;
-            this._hapticFeedbackController = hapticFeedbackController;
             if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
                 && !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
                 this._songTimeInfoEntity.PlayingNewSong = true;
