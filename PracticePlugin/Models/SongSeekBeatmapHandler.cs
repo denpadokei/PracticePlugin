@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -63,6 +64,15 @@ namespace PracticePlugin.Models
             while (burstSliderFillPoolContainer.activeItems.Any()) {
                 var item = burstSliderFillPoolContainer.activeItems.First();
                 this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+            }
+            foreach (var mang in Resources.FindObjectsOfTypeAll<SliderInteractionManager>()) {
+                var activeSlider = mang.GetField<List<SliderController>, SliderInteractionManager>("_activeSliders");
+                while (activeSlider.Any()) {
+                    mang.RemoveActiveSlider(activeSlider.First());
+                }
+                foreach (var item in mang.GetComponentsInChildren<SliderHapticFeedbackInteractionEffect>()) {
+                    item.enabled = false;
+                }
             }
         }
     }
