@@ -18,17 +18,23 @@ namespace PracticePlugin.Models
             BeatmapCallbacksController beatmapCallbacksController,
             NoteCutSoundEffectManager noteCutSoundEffectManager,
             BasicBeatmapObjectManager beatmapObjectManager,
-            IReadonlyBeatmapData beatmapData)
+            IReadonlyBeatmapData beatmapData,
+            DiContainer di)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._beatmapCallbacksController = beatmapCallbacksController;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
             this._beatmapObjectManager = beatmapObjectManager;
+            var callBackManager = Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions");
+            if (callBackManager != null) {
+                this._noodleObjectsCallbacksManager = di.TryResolve(callBackManager);
+            }
         }
         private readonly BeatmapCallbacksController _beatmapCallbacksController;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
+        private readonly object _noodleObjectsCallbacksManager;
         private readonly MethodInfo _noteControllerDespawn = AccessTools.Method(typeof(BasicBeatmapObjectManager), "Despawn", new Type[] { typeof(NoteController) });
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
@@ -37,12 +43,22 @@ namespace PracticePlugin.Models
             this._audioTimeSyncController.SetField("_songTime", newSongTime);
             this._noteCutSoundEffectManager.SetField("_prevNoteATime", -1f);
             this._noteCutSoundEffectManager.SetField("_prevNoteBTime", -1f);
-
             this._beatmapCallbacksController.SetField("_startFilterTime", newSongTime + aheadTime);
             this._beatmapCallbacksController.SetField("_prevSongTime", newSongTime);
             var dic = this._beatmapCallbacksController.GetField<Dictionary<float, CallbacksInTime>, BeatmapCallbacksController>("_callbacksInTimes");
             foreach (var item in dic.Values) {
                 item.lastProcessedNode = null;
+            }
+            if (this._noodleObjectsCallbacksManager != null) {
+                var noodleObjectsCallbacksManagerStartFilerSongTime = AccessTools.Field(Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions"), "_startFilterTime");
+                noodleObjectsCallbacksManagerStartFilerSongTime.SetValue(this._noodleObjectsCallbacksManager, newSongTime + aheadTime);
+                var noodleObjectsCallbacksManagerPrevSongTime = AccessTools.Field(Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions"), "_prevSongtime");
+                noodleObjectsCallbacksManagerPrevSongTime.SetValue(this._noodleObjectsCallbacksManager, newSongTime);
+                var noodleObjectsCallbacksManagerCallbacksIntime = AccessTools.Field(Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions"), "_callbacksInTime");
+                var callbacks = noodleObjectsCallbacksManagerCallbacksIntime.GetValue(this._noodleObjectsCallbacksManager) as CallbacksInTime;
+                if (callbacks != null) {
+                    callbacks.lastProcessedNode = null;
+                }
             }
             // Thank you Kyle 1413!
             var basicGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_basicGameNotePoolContainer");

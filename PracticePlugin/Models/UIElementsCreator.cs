@@ -12,17 +12,14 @@ namespace PracticePlugin.Models
         private readonly SongSeeker _songSeeker;
         private readonly GameEnergyCounter _gameEnergyCounter;
         private readonly SongTimeInfoEntity _songTimeInfoEntity;
-        private readonly BeatmapObjectSpawnController _spawnController;
         private readonly PracticeUI _practiceUI;
         [Inject]
         public UIElementsCreator(
-            BeatmapObjectSpawnController beatmapObjectSpawnController,
             SongTimeInfoEntity songTimeInfoEntity,
             SongSeeker songSeeker,
             PracticeUI practiceUI,
             GameEnergyCounter gameEnergyCounter)
         {
-            this._spawnController = beatmapObjectSpawnController;
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._songSeeker = songSeeker;
             this._practiceUI = practiceUI;
