@@ -1,8 +1,10 @@
 ﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
+using IPA.Loader;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Zenject;
@@ -38,6 +40,28 @@ namespace PracticePlugin.Views
             set => this.SetProperty(ref this._offset, value);
         }
 
+        /// <summary>NJSを編集できるかどうか を取得、設定</summary>
+        private bool _njsInterractable = true;
+        [UIValue("njs-interactable")]
+        /// <summary>NJSを編集できるかどうか を取得、設定</summary>
+        public bool NJSInterractable
+        {
+            get => this._njsInterractable;
+
+            set => this.SetProperty(ref this._njsInterractable, value);
+        }
+
+        /// <summary>オフセットを編集できるかどうか を取得、設定</summary>
+        private bool _offsetInterractable = true;
+        [UIValue("spawn-offset-interactable")]
+        /// <summary>オフセットを編集できるかどうか を取得、設定</summary>
+        public bool OffsetInterractable
+        {
+            get => this._offsetInterractable;
+
+            set => this.SetProperty(ref this._offsetInterractable, value);
+        }
+
         [UIAction("speedFormatter")]
         public string SpeedForValue(float value)
         {
@@ -65,7 +89,7 @@ namespace PracticePlugin.Views
         private float _defaultNJS;
         private float _defaultOffset;
         [Inject]
-        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
@@ -74,6 +98,17 @@ namespace PracticePlugin.Views
                 this.NJS = this._defaultNJS;
                 this._defaultOffset = initData.noteJumpValue;
                 this.Offset = this._defaultOffset;
+            }
+            if (PluginManager.EnabledPlugins.Any(x => x.Name == "NoodleExtensions")) {
+                var isIsNoodleMap = SongCore.Collections.RetrieveDifficultyData(level)?
+                    .additionalDifficultyData?
+                    ._requirements?.Any(x => x == "Noodle Extensions") == true;
+                this.NJSInterractable = !isIsNoodleMap;
+                this.OffsetInterractable = !isIsNoodleMap;
+            }
+            else {
+                this.NJSInterractable = true;
+                this.OffsetInterractable = true;
             }
         }
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
