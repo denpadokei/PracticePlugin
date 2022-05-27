@@ -35,7 +35,6 @@ namespace PracticePlugin.Models
         private readonly AudioTimeSyncController _audioTimeSyncController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
         private readonly object _noodleObjectsCallbacksManager;
-        private readonly MethodInfo _noteControllerDespawn = AccessTools.Method(typeof(BasicBeatmapObjectManager), "Despawn", new Type[] { typeof(NoteController) });
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
@@ -64,34 +63,59 @@ namespace PracticePlugin.Models
             var burstSliderHeadGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<GameNoteController>, BasicBeatmapObjectManager>("_burstSliderHeadGameNotePoolContainer");
             var burstSliderGameNotePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderGameNotePoolContainer");
             var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
+            var obstaclePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
             var cutSoundPoolContainer = this._noteCutSoundEffectManager.GetField<MemoryPoolContainer<NoteCutSoundEffect>, NoteCutSoundEffectManager>("_noteCutSoundEffectPoolContainer");
+            
             while (basicGameNotePoolContainer.activeItems.Any()) {
                 var item = basicGameNotePoolContainer.activeItems.First();
-                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
+                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
+                    movement?.HandleFloorMovementDidFinish();
+                }
+                movement?.HandleNoteJumpDidFinish();
+                item.gameObject.SetActive(false);
             }
             while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
                 var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
-                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
+                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
+                    movement?.HandleFloorMovementDidFinish();
+                }
+                movement?.HandleNoteJumpDidFinish();
+                item.gameObject.SetActive(false);
             }
             while (burstSliderGameNotePoolContainer.activeItems.Any()) {
                 var item = burstSliderGameNotePoolContainer.activeItems.First();
-                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
+                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
+                    movement?.HandleFloorMovementDidFinish();
+                }
+                movement?.HandleNoteJumpDidFinish();
+                item.gameObject.SetActive(false);
             }
             while (burstSliderFillPoolContainer.activeItems.Any()) {
                 var item = burstSliderFillPoolContainer.activeItems.First();
-                this._noteControllerDespawn?.Invoke(this._beatmapObjectManager, new[] { item });
+                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
+                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
+                    movement?.HandleFloorMovementDidFinish();
+                }
+                movement?.HandleNoteJumpDidFinish();
+                item?.gameObject.SetActive(false);
             }
             while (cutSoundPoolContainer.activeItems.Any()) {
                 var item = cutSoundPoolContainer.activeItems.First();
-                item.StopPlayingAndFinish();
-                this._noteCutSoundEffectManager.HandleNoteCutSoundEffectDidFinish(item);
+                item?.StopPlayingAndFinish();
+            }
+            foreach (var item in obstaclePoolContainer.activeItems) {
+                item?.SetField("_finishMovementTime", -1f);
+                item?.ManualUpdate();
             }
             foreach (var mang in Resources.FindObjectsOfTypeAll<SliderInteractionManager>()) {
                 var activeSlider = mang.GetField<List<SliderController>, SliderInteractionManager>("_activeSliders");
                 while (activeSlider.Any()) {
-                    mang.RemoveActiveSlider(activeSlider.First());
+                    mang?.RemoveActiveSlider(activeSlider?.First());
                 }
-                foreach (var item in mang.GetComponentsInChildren<SliderHapticFeedbackInteractionEffect>()) {
+                foreach (var item in mang?.GetComponentsInChildren<SliderHapticFeedbackInteractionEffect>()) {
                     item.enabled = false;
                 }
             }
