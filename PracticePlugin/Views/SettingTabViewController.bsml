@@ -1,0 +1,9 @@
+﻿<bg xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' 
+	xsi:schemaLocation='https://monkeymanboy.github.io/BSML-Docs/ https://raw.githubusercontent.com/monkeymanboy/BSML-Docs/gh-pages/BSMLSchema.xsd'
+	>
+  <vertical horizontal-fit="PreferredSize" preferred-width="80">
+    <checkbox text='Start with full energy' value='start-with-full-energy' bind-value='true' apply-on-change='true'></checkbox>
+    <checkbox text='Show time failed' value='show-time-failed' bind-value='true' apply-on-change='true'></checkbox>
+    <checkbox text='Adjust NJS with speed' value='adjust-njs-with-speed' bind-value='true' apply-on-change='true'></checkbox>
+  </vertical >
+</bg>

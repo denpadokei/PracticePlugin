@@ -8,6 +8,7 @@ namespace PracticePlugin.Installers
         public override void InstallBindings()
         {
             this.Container.BindInterfacesAndSelfTo<ResultViewTextController>().FromNewComponentAsViewController().AsSingle().NonLazy();
+            this.Container.BindInterfacesAndSelfTo<SettingTabViewController>().FromNewComponentAsViewController().AsSingle().NonLazy();
         }
     }
 }
