@@ -1,11 +1,8 @@
-﻿using BeatSaberMarkupLanguage;
-using BeatSaberMarkupLanguage.Attributes;
-using BeatSaberMarkupLanguage.Components;
+﻿using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.GameplaySetup;
 using BeatSaberMarkupLanguage.ViewControllers;
 using PracticePlugin.Configuration;
 using System;
-using System.Collections.Generic;
 using Zenject;
 
 namespace PracticePlugin.Views
@@ -49,18 +46,18 @@ namespace PracticePlugin.Views
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue) {
+            if (!this._disposedValue) {
                 if (disposing) {
                     GameplaySetup.instance.RemoveTab("PracticePlugin");
                 }
-                _disposedValue = true;
+                this._disposedValue = true;
             }
         }
 
         public void Dispose()
         {
             // このコードを変更しないでください。クリーンアップ コードを 'Dispose(bool disposing)' メソッドに記述します
-            Dispose(disposing: true);
+            this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }
