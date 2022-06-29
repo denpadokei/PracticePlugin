@@ -120,5 +120,18 @@ namespace PracticePlugin.Models
                 }
             }
         }
+
+        public void ChangeSongStartTime(float newSongTime)
+        {
+            this._audioTimeSyncController.SetField("_prevAudioSamplePos", -1);
+            this._audioTimeSyncController.SetField("_startSongTime", newSongTime);
+            var initData = this._audioTimeSyncController.GetField<AudioTimeSyncController.InitData, AudioTimeSyncController>("_initData");
+            initData.SetField("startSongTime", newSongTime);
+            this._audioTimeSyncController.SetField("_initData", initData);
+            this._noteCutSoundEffectManager.SetField("_prevNoteATime", -1f);
+            this._noteCutSoundEffectManager.SetField("_prevNoteBTime", -1f);
+            this._beatmapCallbacksController.SetField("_startFilterTime", newSongTime + 1f);
+            this._beatmapCallbacksController.SetField("_prevSongTime", newSongTime);
+        }
     }
 }
