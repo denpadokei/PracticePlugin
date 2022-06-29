@@ -25,7 +25,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -145,6 +145,7 @@
     <Compile Include="Plugin.cs" />
     <Compile Include="Views\PracticeUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\SettingTabViewController.cs" />
     <Compile Include="Views\SongSeeker.cs" />
     <Compile Include="Models\SongSeekBeatmapHandler.cs" />
     <Compile Include="Models\UIElementsCreator.cs" />
@@ -159,6 +160,9 @@
     <None Include="Directory.Build.props" Condition="Exists('Directory.Build.props')" />
     <None Include="PracticePlugin.csproj.user" Condition="Exists('PracticePlugin.csproj.user')" />
     <EmbeddedResource Include="Views\ResultViewTextController.bsml" />
+    <EmbeddedResource Include="Views\SettingTabViewController.bsml">
+      <DependentUpon>SettingTabViewController.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
