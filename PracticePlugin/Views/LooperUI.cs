@@ -38,16 +38,14 @@ namespace PracticePlugin.Views
         private SongSeekBeatmapHandler _songSeekBeatmapHandler;
 
         private AudioTimeSyncController.InitData _initData;
-        private AudioTimeSyncController _syncController;
+        private IAudioTimeSource _syncController;
         [Inject]
         public void Constractor(SongTimeInfoEntity songTimeInfoEntity, IAudioTimeSource source, AudioTimeSyncController.InitData initData, SongSeekBeatmapHandler songSeekBeatmapHandler)
         {
             this._songTimeInfo = songTimeInfoEntity;
             this._initData = initData;
             this._songSeekBeatmapHandler = songSeekBeatmapHandler;
-            if (source is AudioTimeSyncController controller) {
-                this._syncController = controller;
-            }
+            this._syncController = source;
         }
 
         public void Initialize()
