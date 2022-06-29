@@ -88,6 +88,7 @@ namespace PracticePlugin.Models
             }
             else if (e.PropertyName == nameof(PracticeUI.Speed)) {
                 this.TimeScale = (float)(this._practiceUI.Speed / 100d);
+                this.UpdateSpawnMovementData(this._practiceUI.NJS, this._practiceUI.Offset);
             }
         }
 
@@ -131,16 +132,11 @@ namespace PracticePlugin.Models
         }
         private void ChangeMusicPitch(float pitch)
         {
-            if (!PluginConfig.Instance.DisablePitchCorrection) {
-                if (this.IsEqualToOne(pitch)) {
-                    this._mixer.musicPitch = 1;
-                }
-                else {
-                    this._mixer.musicPitch = 1f / pitch;
-                }
+            if (this.IsEqualToOne(pitch)) {
+                this._mixer.musicPitch = 1;
             }
             else {
-                this._mixer.musicPitch = 1f;
+                this._mixer.musicPitch = 1f / pitch;
             }
         }
         #endregion
