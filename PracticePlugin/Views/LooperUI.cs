@@ -26,7 +26,7 @@ namespace PracticePlugin.Views
         private const float s_minCursorDistance = 4f;
         private const float s_stickToSeekerCursorDistance = 2f;
 
-        private static float s_prevStartTime;
+        private static float s_prevStartTime = 0f;
         private static float s_prevEndTime = 1f;
         private ImageView _lineDuration;
 
@@ -35,10 +35,17 @@ namespace PracticePlugin.Views
 
         private LooperCursor _draggingCursor;
         private SongTimeInfoEntity _songTimeInfo;
+        private SongSeekBeatmapHandler _songSeekBeatmapHandler;
+
+        private AudioTimeSyncController.InitData _initData;
+        private IAudioTimeSource _syncController;
         [Inject]
-        public void Constractor(SongTimeInfoEntity songTimeInfoEntity)
+        public void Constractor(SongTimeInfoEntity songTimeInfoEntity, IAudioTimeSource source, AudioTimeSyncController.InitData initData, SongSeekBeatmapHandler songSeekBeatmapHandler)
         {
             this._songTimeInfo = songTimeInfoEntity;
+            this._initData = initData;
+            this._songSeekBeatmapHandler = songSeekBeatmapHandler;
+            this._syncController = source;
         }
 
         public void Initialize()
@@ -108,6 +115,7 @@ namespace PracticePlugin.Views
 
             this._startCursor.Init(LooperCursor.Type.Start);
             this._endCursor.Init(LooperCursor.Type.End);
+            this.ChangeSongStartTime();
         }
 
         private void CursorOnBeginDragEvent(LooperCursor cursor, PointerEventData eventData)
@@ -156,6 +164,17 @@ namespace PracticePlugin.Views
 
             s_prevStartTime = this.StartTime;
             s_prevEndTime = this.EndTime;
+        }
+
+        private void ChangeSongStartTime()
+        {
+            if ((s_prevStartTime != 0 || s_prevEndTime != 1) && this._syncController != null) {
+                var startTime = this._initData.startSongTime / this._syncController.songEndTime;
+                if (startTime < s_prevStartTime || s_prevEndTime < startTime) {
+                    startTime = s_prevStartTime * this._syncController.songEndTime;
+                    this._songSeekBeatmapHandler.ChangeSongStartTime(startTime);
+                }
+            }
         }
     }
 }
