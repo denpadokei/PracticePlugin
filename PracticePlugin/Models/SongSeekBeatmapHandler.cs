@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using IPA.Loader;
 using IPA.Utilities;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,17 @@ namespace PracticePlugin.Models
         private readonly AudioTimeSyncController _audioTimeSyncController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
         private readonly object _noodleObjectsCallbacksManager;
+        private static readonly Type s_customNotesControllerInfo = null;
+        private static readonly MethodInfo s_handleNoteControllerNoteWasMissed = null;
+
+        static SongSeekBeatmapHandler()
+        {
+            var info = PluginManager.GetPlugin("CustomNotes");
+            if (info != null) {
+                s_customNotesControllerInfo = Type.GetType("CustomNotes.Managers.CustomNoteController, CustomNotes");
+                s_handleNoteControllerNoteWasMissed = s_customNotesControllerInfo.GetMethod("HandleNoteControllerNoteWasMissed", BindingFlags.Instance | BindingFlags.Public);
+            }
+        }
 
         public void OnSongTimeChanged(float newSongTime, float aheadTime)
         {
@@ -65,9 +77,10 @@ namespace PracticePlugin.Models
             var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
             var obstaclePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
             var cutSoundPoolContainer = this._noteCutSoundEffectManager.GetField<MemoryPoolContainer<NoteCutSoundEffect>, NoteCutSoundEffectManager>("_noteCutSoundEffectPoolContainer");
-            
+
             while (basicGameNotePoolContainer.activeItems.Any()) {
                 var item = basicGameNotePoolContainer.activeItems.First();
+                this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
                 if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
                     movement?.HandleFloorMovementDidFinish();
@@ -77,6 +90,7 @@ namespace PracticePlugin.Models
             }
             while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
                 var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
+                this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
                 if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
                     movement?.HandleFloorMovementDidFinish();
@@ -86,6 +100,7 @@ namespace PracticePlugin.Models
             }
             while (burstSliderGameNotePoolContainer.activeItems.Any()) {
                 var item = burstSliderGameNotePoolContainer.activeItems.First();
+                this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
                 if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
                     movement?.HandleFloorMovementDidFinish();
@@ -95,6 +110,7 @@ namespace PracticePlugin.Models
             }
             while (burstSliderFillPoolContainer.activeItems.Any()) {
                 var item = burstSliderFillPoolContainer.activeItems.First();
+                this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
                 if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
                     movement?.HandleFloorMovementDidFinish();
@@ -118,6 +134,17 @@ namespace PracticePlugin.Models
                 foreach (var item in mang?.GetComponentsInChildren<SliderHapticFeedbackInteractionEffect>()) {
                     item.enabled = false;
                 }
+            }
+        }
+
+        private void RaiseCustomNoteMissEvent(NoteController nc)
+        {
+            if (s_customNotesControllerInfo == null) {
+                return;
+            }
+            var customNote = nc.gameObject.GetComponentInChildren(s_customNotesControllerInfo);
+            if (customNote != null) {
+                s_handleNoteControllerNoteWasMissed.Invoke(customNote, new object[] { nc });
             }
         }
     }
