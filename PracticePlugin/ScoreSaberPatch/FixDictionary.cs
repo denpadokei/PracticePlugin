@@ -47,8 +47,12 @@ namespace PracticePlugin.ScoreSaberPatch
             try {
                 scoreSaberAssembly = Assembly.LoadFrom(scoresaberPath);
             }
-            catch (Exception) {
+            catch (FileNotFoundException) {
                 Logger.Info("ScoreSaber failed load");
+                return null;
+            }
+            catch (Exception e) {
+                Logger.Error(e);
                 return null;
             }
             var affinies = scoreSaberAssembly.GetTypes().Where(x => typeof(IAffinity).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract && !x.IsInterface);
