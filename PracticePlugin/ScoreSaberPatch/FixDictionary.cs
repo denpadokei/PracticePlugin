@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using IPA.Loader;
 using SiraUtil.Affinity;
 using System;
 using System.Collections.Generic;
@@ -36,10 +37,18 @@ namespace PracticePlugin.ScoreSaberPatch
             if (original != null) {
                 return original;
             }
+            var scoreSaberInfo = PluginManager.GetPlugin("ScoreSaber");
+            if (scoreSaberInfo == null) {
+                Logger.Info("ScoreSaber not loaded.");
+                return null;
+            }
             var scoresaberPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ScoreSaber.dll");
-            var scoreSaberAssembly = Assembly.LoadFrom(scoresaberPath);
-            if (scoreSaberAssembly == null) {
-                Logger.Info("Not found scoresaber");
+            Assembly scoreSaberAssembly = null;
+            try {
+                scoreSaberAssembly = Assembly.LoadFrom(scoresaberPath);
+            }
+            catch (Exception) {
+                Logger.Info("ScoreSaber failed load");
                 return null;
             }
             var affinies = scoreSaberAssembly.GetTypes().Where(x => typeof(IAffinity).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract && !x.IsInterface);

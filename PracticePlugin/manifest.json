@@ -5,7 +5,7 @@
   "gameVersion": "1.21.0",
   "id": "PracticePlugin",
   "name": "PracticePlugin",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "dependsOn": {
     "BSIPA": "^4.2.2",
     "SiraUtil": "^3.0.6",
