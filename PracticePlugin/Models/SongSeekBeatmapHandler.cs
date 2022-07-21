@@ -82,41 +82,25 @@ namespace PracticePlugin.Models
                 var item = basicGameNotePoolContainer.activeItems.First();
                 this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
-                    movement?.HandleFloorMovementDidFinish();
-                }
                 movement?.HandleNoteJumpDidFinish();
-                item.gameObject.SetActive(false);
             }
             while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
                 var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
                 this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
-                    movement?.HandleFloorMovementDidFinish();
-                }
                 movement?.HandleNoteJumpDidFinish();
-                item.gameObject.SetActive(false);
             }
             while (burstSliderGameNotePoolContainer.activeItems.Any()) {
                 var item = burstSliderGameNotePoolContainer.activeItems.First();
                 this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
-                    movement?.HandleFloorMovementDidFinish();
-                }
                 movement?.HandleNoteJumpDidFinish();
-                item.gameObject.SetActive(false);
             }
             while (burstSliderFillPoolContainer.activeItems.Any()) {
                 var item = burstSliderFillPoolContainer.activeItems.First();
                 this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
-                    movement?.HandleFloorMovementDidFinish();
-                }
                 movement?.HandleNoteJumpDidFinish();
-                item?.gameObject.SetActive(false);
             }
             while (cutSoundPoolContainer.activeItems.Any()) {
                 var item = cutSoundPoolContainer.activeItems.First();

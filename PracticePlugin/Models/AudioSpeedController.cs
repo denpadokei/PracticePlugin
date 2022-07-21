@@ -44,6 +44,11 @@ namespace PracticePlugin.Models
             if (!this._songTimeInfoEntity.PracticeMode) {
                 return;
             }
+
+            if (this._gamePause != null && this._gamePause.isPaused) {
+                return;
+            }
+
             var newPos = (this._audioTimeSyncController.songTime + 0.1f) / this._audioTimeSyncController.songLength;
             if (newPos >= this._looperUI.EndTime && !this.IsEqualToOne(this._looperUI.EndTime)) {
                 this._songSeeker.PlaybackPosition = this._looperUI.StartTime;
@@ -161,11 +166,12 @@ namespace PracticePlugin.Models
         private const float s_aheadTime = 1f;
         private IBpmController _bpmController;
         private BeatmapCallbacksController _beatmapCallbackController;
+        private IGamePause _gamePause;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(AudioManagerSO audioManagerSO, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController)
+        public void Constractor(AudioManagerSO audioManagerSO, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController, IGamePause gamePause)
         {
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
@@ -178,6 +184,7 @@ namespace PracticePlugin.Models
             this._mixer = audioManagerSO;
             this._bpmController = bpmController;
             this._beatmapCallbackController = beatmapCallbacksController;
+            this._gamePause = gamePause;
             if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
                 && !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
                 this._songTimeInfoEntity.PlayingNewSong = true;

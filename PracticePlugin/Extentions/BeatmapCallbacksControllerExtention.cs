@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PracticePlugin.Extentions
 {
-    public static class BeatmapCallbacksControllerEcxtention
+    public static class BeatmapCallbacksControllerExtention
     {
         public static LinkedListNode<BeatmapDataItem> GetLastNode(this BeatmapCallbacksController callbackController, float aheadTime)
         {
