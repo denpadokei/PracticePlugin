@@ -30,12 +30,9 @@ namespace PracticePlugin.Models
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
             if (this._songTimeInfoEntity.PracticeMode) {
-                if (!this.IsEqualToOne(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul)) {
-                    this._timeScale = this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul;
-                }
-                else {
-                    this._timeScale = this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
-                }
+                this._timeScale = !this.IsEqualToOne(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul)
+                    ? this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul
+                    : this._gameplayCoreSceneSetupData.gameplayModifiers.songSpeedMul;
             }
             this.ChangeMusicPitch(this.TimeScale);
         }
@@ -137,12 +134,7 @@ namespace PracticePlugin.Models
         }
         private void ChangeMusicPitch(float pitch)
         {
-            if (this.IsEqualToOne(pitch)) {
-                this._mixer.musicPitch = 1;
-            }
-            else {
-                this._mixer.musicPitch = 1f / pitch;
-            }
+            this._mixer.musicPitch = this.IsEqualToOne(pitch) ? 1 : 1f / pitch;
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*

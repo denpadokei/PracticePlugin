@@ -130,7 +130,6 @@ namespace PracticePlugin.Views
             this.PlaybackPosition = (float)this._songAudioSource.timeSamples / this._songAudioSource.clip.samples;
             this._timeLength.text = FormatTimeSpan(TimeSpan.FromSeconds(this._songAudioSource.clip.length));
             this.UpdateCurrentTimeText(this.PlaybackPosition);
-
         }
 
         public void OnDisable()
@@ -147,7 +146,6 @@ namespace PracticePlugin.Views
 
             this.ApplyPlaybackPosition();
         }
-
 
         public void Update()
         {
@@ -184,8 +182,10 @@ namespace PracticePlugin.Views
 
         public void OnDrag(PointerEventData eventData)
         {
-            var hovering = (eventData.hovered.Count > 0);
-            if (!hovering) { return; }
+            var hovering = eventData.hovered.Count > 0;
+            if (!hovering) {
+                return;
+            }
 
             var clampedX = Mathf.Clamp(eventData.position.x, -1.0f, 1.0f);
             this.PlaybackPosition = (clampedX + 1f) * 0.5f; // seekbar position [0.0 - 1.0]

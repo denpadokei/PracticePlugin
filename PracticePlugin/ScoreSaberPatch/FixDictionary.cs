@@ -87,12 +87,7 @@ namespace PracticePlugin.ScoreSaberPatch
                 s_fieldInfo = __instance.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance).FirstOrDefault(x => x.FieldType.Equals(typeof(Dictionary<NoteData, NoteCutInfo>)));
             }
             var dic = (Dictionary<NoteData, NoteCutInfo>)s_fieldInfo?.GetValue(__instance);
-            if (dic != null && dic.ContainsKey(noteController.noteData)) {
-                __runOriginal = false;
-            }
-            else {
-                __runOriginal = true;
-            }
+            __runOriginal = dic == null || !dic.ContainsKey(noteController.noteData);
             return __runOriginal;
         }
     }
