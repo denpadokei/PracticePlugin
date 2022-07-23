@@ -78,37 +78,18 @@ namespace PracticePlugin.Models
             var obstaclePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
             var cutSoundPoolContainer = this._noteCutSoundEffectManager.GetField<MemoryPoolContainer<NoteCutSoundEffect>, NoteCutSoundEffectManager>("_noteCutSoundEffectPoolContainer");
 
-            while (basicGameNotePoolContainer.activeItems.Any()) {
-                var item = basicGameNotePoolContainer.activeItems.First();
-                this.RaiseCustomNoteMissEvent(item);
-                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                movement?.HandleNoteJumpDidFinish();
-            }
-            while (burstSliderHeadGameNotePoolContainer.activeItems.Any()) {
-                var item = burstSliderHeadGameNotePoolContainer.activeItems.First();
-                this.RaiseCustomNoteMissEvent(item);
-                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                movement?.HandleNoteJumpDidFinish();
-            }
-            while (burstSliderGameNotePoolContainer.activeItems.Any()) {
-                var item = burstSliderGameNotePoolContainer.activeItems.First();
-                this.RaiseCustomNoteMissEvent(item);
-                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                movement?.HandleNoteJumpDidFinish();
-            }
-            while (burstSliderFillPoolContainer.activeItems.Any()) {
-                var item = burstSliderFillPoolContainer.activeItems.First();
-                this.RaiseCustomNoteMissEvent(item);
-                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
-                movement?.HandleNoteJumpDidFinish();
+            this.DespawnNotes(basicGameNotePoolContainer);
+            this.DespawnNotes(burstSliderHeadGameNotePoolContainer);
+            this.DespawnNotes(burstSliderGameNotePoolContainer);
+            this.DespawnNotes(burstSliderFillPoolContainer);
+
+            foreach (var item in obstaclePoolContainer.activeItems) {
+                item?.SetField("_finishMovementTime", -1f);
+                item?.ManualUpdate();
             }
             while (cutSoundPoolContainer.activeItems.Any()) {
                 var item = cutSoundPoolContainer.activeItems.First();
                 item?.StopPlayingAndFinish();
-            }
-            foreach (var item in obstaclePoolContainer.activeItems) {
-                item?.SetField("_finishMovementTime", -1f);
-                item?.ManualUpdate();
             }
             foreach (var mang in Resources.FindObjectsOfTypeAll<SliderInteractionManager>()) {
                 var activeSlider = mang.GetField<List<SliderController>, SliderInteractionManager>("_activeSliders");
@@ -118,6 +99,21 @@ namespace PracticePlugin.Models
                 foreach (var item in mang?.GetComponentsInChildren<SliderHapticFeedbackInteractionEffect>()) {
                     item.enabled = false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Deapawn notes
+        /// </summary>
+        /// <typeparam name="T"><see cref="NoteController"/></typeparam>
+        /// <param name="memoryPoolContainer"></param>
+        private void DespawnNotes<T>(MemoryPoolContainer<T> memoryPoolContainer) where T : NoteController
+        {
+            while (memoryPoolContainer.activeItems.Any()) {
+                var item = memoryPoolContainer.activeItems.First();
+                this.RaiseCustomNoteMissEvent(item);
+                var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
+                movement?.HandleNoteJumpDidFinish();
             }
         }
 
