@@ -109,6 +109,9 @@ namespace PracticePlugin.Models
         /// <param name="memoryPoolContainer"></param>
         private void DespawnNotes<T>(MemoryPoolContainer<T> memoryPoolContainer) where T : NoteController
         {
+            if (memoryPoolContainer == null) {
+                return;
+            }
             while (memoryPoolContainer.activeItems.Any()) {
                 var item = memoryPoolContainer.activeItems.First();
                 this.RaiseCustomNoteMissEvent(item);
