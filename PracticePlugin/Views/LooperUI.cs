@@ -133,8 +133,10 @@ namespace PracticePlugin.Views
         {
             if (this._draggingCursor != null) {
                 var eventData = this._draggingCursor.EventData;
-                var hovering = (eventData.hovered.Count > 0);
-                if (!hovering) { return; }
+                var hovering = eventData.hovered.Count > 0;
+                if (!hovering) {
+                    return;
+                }
                 var newPos = Mathf.Lerp(0, SongSeeker.SeekBarSize.x, Mathf.InverseLerp(-1, 1, Mathf.Clamp(eventData.position.x, -1f, 1f)));
 
                 var seekerPos = playbackPosition;
@@ -142,13 +144,10 @@ namespace PracticePlugin.Views
                     newPos = seekerPos;
                 }
 
-                if (this._draggingCursor.CursorType == LooperCursor.Type.Start) {
-                    this._draggingCursor.Position = Mathf.Clamp(newPos, 0, this._endCursor.Position - s_minCursorDistance);
-                }
-                else {
-                    this._draggingCursor.Position = Mathf.Clamp(newPos, this._startCursor.Position + s_minCursorDistance,
+                this._draggingCursor.Position = this._draggingCursor.CursorType == LooperCursor.Type.Start
+                    ? Mathf.Clamp(newPos, 0, this._endCursor.Position - s_minCursorDistance)
+                    : Mathf.Clamp(newPos, this._startCursor.Position + s_minCursorDistance,
                         SongSeeker.SeekBarSize.x);
-                }
             }
             this._lineDuration.rectTransform.sizeDelta = new Vector2(this._endCursor.Position - this._startCursor.Position, s_lineDurationWidth);
             this._lineDuration.rectTransform.anchoredPosition = new Vector2((this._startCursor.Position + this._endCursor.Position) / 2, 0);

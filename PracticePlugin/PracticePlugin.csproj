@@ -129,7 +129,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
-    <Compile Include="Extentions\BeatmapCallbacksControllerEcxtention.cs" />
+    <Compile Include="Extentions\BeatmapCallbacksControllerExtention.cs" />
     <Compile Include="Extentions\InitDataExtention.cs" />
     <Compile Include="Installers\PlayerInstaller.cs" />
     <Compile Include="Installers\PracticeAppInstaller.cs" />

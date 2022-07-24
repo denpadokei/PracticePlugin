@@ -58,12 +58,7 @@ namespace PracticePlugin.Views
         #region // プライベートメソッド
         private void OnResultsViewController_didActivateEvent(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
         {
-            if (this._songTimeInfoEntity.ShowFailTextNext && PluginConfig.Instance.ShowTimeFailed) {
-                this.FailText = this._songTimeInfoEntity.FailTimeText;
-            }
-            else {
-                this.FailText = "";
-            }
+            this.FailText = this._songTimeInfoEntity.ShowFailTextNext && PluginConfig.Instance.ShowTimeFailed ? this._songTimeInfoEntity.FailTimeText : "";
             this._songTimeInfoEntity.ShowFailTextNext = false;
         }
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)

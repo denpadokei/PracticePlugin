@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using IPA.Loader;
 using SiraUtil.Affinity;
 using System;
 using System.Collections.Generic;
@@ -36,10 +37,22 @@ namespace PracticePlugin.ScoreSaberPatch
             if (original != null) {
                 return original;
             }
+            var scoreSaberInfo = PluginManager.GetPlugin("ScoreSaber");
+            if (scoreSaberInfo == null) {
+                Logger.Info("ScoreSaber not loaded.");
+                return null;
+            }
             var scoresaberPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "ScoreSaber.dll");
-            var scoreSaberAssembly = Assembly.LoadFrom(scoresaberPath);
-            if (scoreSaberAssembly == null) {
-                Logger.Info("Not found scoresaber");
+            Assembly scoreSaberAssembly = null;
+            try {
+                scoreSaberAssembly = Assembly.LoadFrom(scoresaberPath);
+            }
+            catch (FileNotFoundException) {
+                Logger.Info("ScoreSaber failed load");
+                return null;
+            }
+            catch (Exception e) {
+                Logger.Error(e);
                 return null;
             }
             var affinies = scoreSaberAssembly.GetTypes().Where(x => typeof(IAffinity).IsAssignableFrom(x) && x.IsClass && !x.IsAbstract && !x.IsInterface);
@@ -74,12 +87,7 @@ namespace PracticePlugin.ScoreSaberPatch
                 s_fieldInfo = __instance.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance).FirstOrDefault(x => x.FieldType.Equals(typeof(Dictionary<NoteData, NoteCutInfo>)));
             }
             var dic = (Dictionary<NoteData, NoteCutInfo>)s_fieldInfo?.GetValue(__instance);
-            if (dic != null && dic.ContainsKey(noteController.noteData)) {
-                __runOriginal = false;
-            }
-            else {
-                __runOriginal = true;
-            }
+            __runOriginal = dic == null || !dic.ContainsKey(noteController.noteData);
             return __runOriginal;
         }
     }
