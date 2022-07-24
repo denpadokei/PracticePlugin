@@ -113,6 +113,11 @@ namespace PracticePlugin.Models
                 var item = memoryPoolContainer.activeItems.First();
                 this.RaiseCustomNoteMissEvent(item);
                 var movement = item?.GetField<NoteMovement, NoteController>("_noteMovement");
+#if false
+                if (movement?.movementPhase == NoteMovement.MovementPhase.MovingOnTheFloor) {
+                    movement?.HandleFloorMovementDidFinish();
+                }
+#endif
                 movement?.HandleNoteJumpDidFinish();
             }
         }
