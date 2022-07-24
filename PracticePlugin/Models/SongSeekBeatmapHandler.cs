@@ -38,6 +38,8 @@ namespace PracticePlugin.Models
         private readonly object _noodleObjectsCallbacksManager;
         private static readonly Type s_customNotesControllerInfo = null;
         private static readonly MethodInfo s_handleNoteControllerNoteWasMissed = null;
+        private static readonly float s_minAheadTime = 1f;
+        private SliderInteractionManager[] _sliderInteractionManager = null;
 
         static SongSeekBeatmapHandler()
         {
@@ -48,8 +50,13 @@ namespace PracticePlugin.Models
             }
         }
 
-        public void OnSongTimeChanged(float newSongTime, float aheadTime)
+        public void OnSongTimeChanged(float newSongTime)
         {
+            var samplePos = newSongTime / this._audioTimeSyncController.songEndTime;
+            var audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
+            audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, audioSource.clip.samples, samplePos));
+            var aheadTime = Mathf.Min(newSongTime, s_minAheadTime);
+            audioSource.time -= aheadTime;
             this._audioTimeSyncController.SetField("_prevAudioSamplePos", -1);
             this._audioTimeSyncController.SetField("_songTime", newSongTime);
             this._noteCutSoundEffectManager.SetField("_prevNoteATime", -1f);
@@ -77,12 +84,10 @@ namespace PracticePlugin.Models
             var burstSliderFillPoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<BurstSliderGameNoteController>, BasicBeatmapObjectManager>("_burstSliderFillPoolContainer");
             var obstaclePoolContainer = this._beatmapObjectManager.GetField<MemoryPoolContainer<ObstacleController>, BasicBeatmapObjectManager>("_obstaclePoolContainer");
             var cutSoundPoolContainer = this._noteCutSoundEffectManager.GetField<MemoryPoolContainer<NoteCutSoundEffect>, NoteCutSoundEffectManager>("_noteCutSoundEffectPoolContainer");
-
             this.DespawnNotes(basicGameNotePoolContainer);
             this.DespawnNotes(burstSliderHeadGameNotePoolContainer);
             this.DespawnNotes(burstSliderGameNotePoolContainer);
             this.DespawnNotes(burstSliderFillPoolContainer);
-
             foreach (var item in obstaclePoolContainer.activeItems) {
                 item?.SetField("_finishMovementTime", -1f);
                 item?.ManualUpdate();
@@ -91,7 +96,10 @@ namespace PracticePlugin.Models
                 var item = cutSoundPoolContainer.activeItems.First();
                 item?.StopPlayingAndFinish();
             }
-            foreach (var mang in Resources.FindObjectsOfTypeAll<SliderInteractionManager>()) {
+            if (this._sliderInteractionManager == null) {
+                this._sliderInteractionManager = Resources.FindObjectsOfTypeAll<SliderInteractionManager>();
+            }
+            foreach (var mang in this._sliderInteractionManager) {
                 var activeSlider = mang.GetField<List<SliderController>, SliderInteractionManager>("_activeSliders");
                 while (activeSlider.Any()) {
                     mang?.RemoveActiveSlider(activeSlider?.First());

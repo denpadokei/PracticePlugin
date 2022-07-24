@@ -128,9 +128,8 @@ namespace PracticePlugin.Models
         }
         private void ApplyPlaybackPosition()
         {
-            this._audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._audioSource.clip.samples, this._songSeeker.PlaybackPosition));
-            this._audioSource.time -= Mathf.Min(s_aheadTime, this._audioSource.time);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(this._audioSource.time, Mathf.Min(s_aheadTime, this._audioSource.time));
+            var newSongTime = Mathf.Lerp(0, this._audioTimeSyncController.songEndTime, this._songSeeker.PlaybackPosition);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(newSongTime);
         }
         private void ChangeMusicPitch(float pitch)
         {

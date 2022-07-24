@@ -208,9 +208,8 @@ namespace PracticePlugin.Views
         }
         public void ApplyPlaybackPosition()
         {
-            this._songAudioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, this._songAudioSource.clip.samples, this.PlaybackPosition));
-            this._songAudioSource.time -= Mathf.Min(s_aheadTime, this._songAudioSource.time);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(this._songAudioSource.time, Mathf.Min(s_aheadTime, this._songAudioSource.time));
+            var newSongTime = Mathf.Lerp(0, this._audioTimeSyncController.songEndTime, this.PlaybackPosition);
+            this._songSeekBeatmapHandler.OnSongTimeChanged(newSongTime);
         }
 
         private void UpdateCurrentTimeText(float playbackPos)
