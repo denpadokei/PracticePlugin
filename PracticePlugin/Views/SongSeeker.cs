@@ -186,7 +186,11 @@ namespace PracticePlugin.Views
             if (!hovering) {
                 return;
             }
-
+            eventData.useDragThreshold = false;
+            var y = eventData.position.y - this._seekBar.gameObject.transform.position.y;
+            if (y < -0.03f || y > 0.06) {
+                return;
+            }
             var clampedX = Mathf.Clamp(eventData.position.x, -1.0f, 1.0f);
             this.PlaybackPosition = (clampedX + 1f) * 0.5f; // seekbar position [0.0 - 1.0]
             this.CheckLooperCursorStick();
