@@ -186,7 +186,6 @@ namespace PracticePlugin.Views
             if (!hovering) {
                 return;
             }
-            eventData.useDragThreshold = false;
             var y = eventData.position.y - this._seekBar.gameObject.transform.position.y;
             if (y < -0.03f || y > 0.06) {
                 return;
