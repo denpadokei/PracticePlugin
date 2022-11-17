@@ -4,6 +4,7 @@ using PracticePlugin.Extentions;
 using PracticePlugin.Views;
 using System;
 using UnityEngine;
+using UnityEngine.Scripting;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -26,6 +27,7 @@ namespace PracticePlugin.Models
             if (!this._songTimeInfoEntity.PracticeMode) {
                 return;
             }
+            this._gamePause.didPauseEvent += this.GamePause_didPauseEvent;
             this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
@@ -36,6 +38,14 @@ namespace PracticePlugin.Models
             }
             this.ChangeMusicPitch(this.TimeScale);
         }
+
+        private void GamePause_didPauseEvent()
+        {
+            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+            GC.Collect();
+            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+        }
+
         public void Update()
         {
             if (!this._songTimeInfoEntity.PracticeMode) {
@@ -191,6 +201,7 @@ namespace PracticePlugin.Models
                 if (disposing) {
                     this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
                     this._mixer = null;
+                    this._gamePause.didPauseEvent -= this.GamePause_didPauseEvent;
                 }
                 this._disposedValue = true;
             }
