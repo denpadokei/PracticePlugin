@@ -31,6 +31,13 @@ namespace PracticePlugin.Views
             set => PluginConfig.Instance.AdjustNJSWithSpeed = value;
         }
 
+        [UIValue("disable-pitch-correction")]
+        public bool DisablePithCorrection
+        {
+            get => PluginConfig.Instance.DisablePitchCorrection;
+            set => PluginConfig.Instance.DisablePitchCorrection= value;
+        }
+
         private bool _disposedValue;
         public void Initialize()
         {

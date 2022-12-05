@@ -5,5 +5,6 @@
     <checkbox text='Start with full energy' value='start-with-full-energy' bind-value='true' apply-on-change='true'></checkbox>
     <checkbox text='Show time failed' value='show-time-failed' bind-value='true' apply-on-change='true'></checkbox>
     <checkbox text='Adjust NJS with speed' value='adjust-njs-with-speed' bind-value='true' apply-on-change='true'></checkbox>
+    <checkbox text='Disable music pitch correction' value='disable-pitch-correction' bind-value='true' apply-on-change='true'></checkbox>
   </vertical >
 </bg>

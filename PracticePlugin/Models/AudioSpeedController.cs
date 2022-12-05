@@ -41,9 +41,11 @@ namespace PracticePlugin.Models
 
         private void GamePause_didPauseEvent()
         {
-            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
-            GC.Collect();
-            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+            if (PluginConfig.Instance.EnableGC) {
+                GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+                GC.Collect();
+                GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+            }
         }
 
         public void Update()
@@ -143,7 +145,12 @@ namespace PracticePlugin.Models
         }
         private void ChangeMusicPitch(float pitch)
         {
-            this._mixer.musicPitch = this.IsEqualToOne(pitch) ? 1 : 1f / pitch;
+            if (PluginConfig.Instance.DisablePitchCorrection) {
+                this._mixer.musicPitch = 1f;
+            }
+            else {
+                this._mixer.musicPitch = this.IsEqualToOne(pitch) ? 1 : 1f / pitch;
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
