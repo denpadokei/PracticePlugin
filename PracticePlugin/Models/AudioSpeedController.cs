@@ -4,6 +4,7 @@ using PracticePlugin.Extentions;
 using PracticePlugin.Views;
 using System;
 using UnityEngine;
+using UnityEngine.Scripting;
 using Zenject;
 
 namespace PracticePlugin.Models
@@ -26,6 +27,7 @@ namespace PracticePlugin.Models
             if (!this._songTimeInfoEntity.PracticeMode) {
                 return;
             }
+            this._gamePause.didPauseEvent += this.GamePause_didPauseEvent;
             this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
             this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
@@ -36,6 +38,16 @@ namespace PracticePlugin.Models
             }
             this.ChangeMusicPitch(this.TimeScale);
         }
+
+        private void GamePause_didPauseEvent()
+        {
+            if (PluginConfig.Instance.EnableGC) {
+                GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+                GC.Collect();
+                GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+            }
+        }
+
         public void Update()
         {
             if (!this._songTimeInfoEntity.PracticeMode) {
@@ -133,7 +145,12 @@ namespace PracticePlugin.Models
         }
         private void ChangeMusicPitch(float pitch)
         {
-            this._mixer.musicPitch = this.IsEqualToOne(pitch) ? 1 : 1f / pitch;
+            if (PluginConfig.Instance.DisablePitchCorrection) {
+                this._mixer.musicPitch = 1f;
+            }
+            else {
+                this._mixer.musicPitch = this.IsEqualToOne(pitch) ? 1 : 1f / pitch;
+            }
         }
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
@@ -191,6 +208,7 @@ namespace PracticePlugin.Models
                 if (disposing) {
                     this._practiceUI.PropertyChanged -= this.PracticeUI_PropertyChanged;
                     this._mixer = null;
+                    this._gamePause.didPauseEvent -= this.GamePause_didPauseEvent;
                 }
                 this._disposedValue = true;
             }
