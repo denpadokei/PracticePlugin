@@ -2,6 +2,7 @@
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using IPA.Loader;
+using PracticePlugin.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -88,10 +89,13 @@ namespace PracticePlugin.Views
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
         private float _defaultNJS;
         private float _defaultOffset;
+        private SongSeeker _songSeeker;
+        private SongSpeedParameeter _beforeDeactiveParam;
         [Inject]
-        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level, SongSeeker songSeeker)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
+            this._songSeeker = songSeeker;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
                 this.Speed = Mathf.RoundToInt(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul * 100);
                 this._defaultNJS = initData.noteJumpMovementSpeed;
@@ -111,6 +115,32 @@ namespace PracticePlugin.Views
                 this.OffsetInterractable = true;
             }
         }
+
+        protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+        {
+            base.DidActivate(firstActivation, addedToHierarchy, screenSystemEnabling);
+            this._beforeDeactiveParam = new SongSpeedParameeter
+            {
+                Speed = this.Speed,
+                NJS = this.NJS,
+                Offset = this.Offset
+            };
+        }
+
+        protected override void DidDeactivate(bool removedFromHierarchy, bool screenSystemDisabling)
+        {
+            base.DidDeactivate(removedFromHierarchy, screenSystemDisabling);
+            var afterDeactiveParam = new SongSpeedParameeter
+            {
+                Speed = this.Speed,
+                NJS = this.NJS,
+                Offset = this.Offset
+            };
+            if (this._beforeDeactiveParam != afterDeactiveParam) {
+                this._songSeeker.ApplyPlaybackPosition();
+            }
+        }
+
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             this.NotifyPropertyChanged(e.PropertyName);

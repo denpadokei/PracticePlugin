@@ -140,8 +140,7 @@ namespace PracticePlugin.Models
         }
         private void ApplyPlaybackPosition()
         {
-            var newSongTime = Mathf.Lerp(0, this._audioTimeSyncController.songEndTime, this._songSeeker.PlaybackPosition);
-            this._songSeekBeatmapHandler.OnSongTimeChanged(newSongTime);
+            this._songSeeker.ApplyPlaybackPosition();
         }
         private void ChangeMusicPitch(float pitch)
         {
