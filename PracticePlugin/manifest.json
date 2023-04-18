@@ -9,8 +9,8 @@
   "dependsOn": {
     "BSIPA": "^4.2.2",
     "SiraUtil": "^3.1.2",
-    "BeatSaberMarkupLanguage": "^1.6.9",
-    "SongCore": "^3.10.1"
+    "BeatSaberMarkupLanguage": "^1.6.10",
+    "SongCore": "^3.10.2"
   },
   "links": {
     "project-source": "https://github.com/denpadokei/PracticePlugin",
