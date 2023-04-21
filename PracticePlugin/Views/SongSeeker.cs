@@ -24,6 +24,7 @@ namespace PracticePlugin.Views
         private TMP_Text _currentTime;
         private TMP_Text _timeLength;
         private const float s_aheadTime = 1f;
+        private IGamePause _gamePause;
 
         public static readonly Vector2 SeekBarSize = new Vector2(100, 2);
         public static readonly float HalfSeekBarSize = SeekBarSize.x / 2;
@@ -42,13 +43,14 @@ namespace PracticePlugin.Views
         internal int _startTimeSamples;
         private bool _isPractice = false;
         [Inject]
-        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, SongTimeInfoEntity songTimeInfoEntity)
+        public void Constractor(AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, SongTimeInfoEntity songTimeInfoEntity, IGamePause gamePause)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._songSeekBeatmapHandler = songSeekBeatmapHandler;
             this._looperUI = looperUI;
             this._songAudioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             this._isPractice = songTimeInfoEntity.PracticeMode;
+            this._gamePause = gamePause;
         }
         public void SetPlaybackPosition(float value, float start, float end)
         {
@@ -113,6 +115,8 @@ namespace PracticePlugin.Views
             if (this._looperUI.StartTime != 0) {
                 this.PlaybackPosition = this._looperUI.StartTime;
             }
+            this._gamePause.didPauseEvent += this.OnGamePause_didPauseEvent;
+            this._gamePause.willResumeEvent += this.OnGamePause_willResumeEvent;
         }
 
         private void LooperUIOnOnDragEndEvent()
@@ -120,7 +124,7 @@ namespace PracticePlugin.Views
             this.PlaybackPosition = Mathf.Clamp(this.PlaybackPosition, this._looperUI.StartTime, this._looperUI.EndTime);
         }
 
-        public void OnEnable()
+        private void OnGamePause_didPauseEvent()
         {
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
@@ -132,7 +136,7 @@ namespace PracticePlugin.Views
             this.UpdateCurrentTimeText(this.PlaybackPosition);
         }
 
-        public void OnDisable()
+        private void OnGamePause_willResumeEvent()
         {
             this._init = true;
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
@@ -178,6 +182,8 @@ namespace PracticePlugin.Views
         protected void OnDestroy()
         {
             this._looperUI.OnDragEndEvent -= this.LooperUIOnOnDragEndEvent;
+            this._gamePause.didPauseEvent -= this.OnGamePause_didPauseEvent;
+            this._gamePause.willResumeEvent -= this.OnGamePause_willResumeEvent;
         }
 
         public void OnDrag(PointerEventData eventData)

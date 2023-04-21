@@ -2,6 +2,7 @@
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
 using IPA.Loader;
+using PracticePlugin.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -88,10 +89,15 @@ namespace PracticePlugin.Views
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
         private float _defaultNJS;
         private float _defaultOffset;
+        private SongSeeker _songSeeker;
+        private SongSpeedParameeter _beforeDeactiveParam;
+        private IGamePause _gamePause;
         [Inject]
-        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level, SongSeeker songSeeker, IGamePause gamePause)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
+            this._songSeeker = songSeeker;
+            this._gamePause = gamePause;
             if (this._gameplayCoreSceneSetupData.practiceSettings != null) {
                 this.Speed = Mathf.RoundToInt(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul * 100);
                 this._defaultNJS = initData.noteJumpMovementSpeed;
@@ -100,17 +106,53 @@ namespace PracticePlugin.Views
                 this.Offset = this._defaultOffset;
             }
             if (PluginManager.EnabledPlugins.Any(x => x.Name == "NoodleExtensions")) {
-                var isIsNoodleMap = SongCore.Collections.RetrieveDifficultyData(level)?
+                var isNoodleMap = SongCore.Collections.RetrieveDifficultyData(level)?
                     .additionalDifficultyData?
                     ._requirements?.Any(x => x == "Noodle Extensions") == true;
-                this.NJSInterractable = !isIsNoodleMap;
-                this.OffsetInterractable = !isIsNoodleMap;
+                this.NJSInterractable = !isNoodleMap;
+                this.OffsetInterractable = !isNoodleMap;
             }
             else {
                 this.NJSInterractable = true;
                 this.OffsetInterractable = true;
             }
+            this._gamePause.didPauseEvent += this.OnGamePause_didPauseEvent;
+            this._gamePause.willResumeEvent += this.OnGamePause_willResumeEvent;
         }
+
+        private void OnGamePause_didPauseEvent()
+        {
+            Logger.Info("OnGamePause_didPauseEvent");
+            this._beforeDeactiveParam = new SongSpeedParameeter
+            {
+                Speed = this.Speed,
+                NJS = this.NJS,
+                Offset = this.Offset
+            };
+        }
+
+        private void OnGamePause_willResumeEvent()
+        {
+            Logger.Info("OnGamePause_willResumeEvent");
+            var afterDeactiveParam = new SongSpeedParameeter
+            {
+                Speed = this.Speed,
+                NJS = this.NJS,
+                Offset = this.Offset
+            };
+            Logger.Debug($"same?:{this._beforeDeactiveParam == afterDeactiveParam}");
+            if (this._beforeDeactiveParam != afterDeactiveParam) {
+                this._songSeeker.ApplyPlaybackPosition();
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            this._gamePause.didPauseEvent -= this.OnGamePause_didPauseEvent;
+            this._gamePause.willResumeEvent -= this.OnGamePause_willResumeEvent;
+            base.OnDestroy();
+        }
+
         protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
         {
             this.NotifyPropertyChanged(e.PropertyName);

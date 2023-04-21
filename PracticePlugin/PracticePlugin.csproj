@@ -139,6 +139,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Models\LevelFinishChecker.cs" />
     <Compile Include="Models\LooperCursor.cs" />
+    <Compile Include="Models\SongSpeedParameeter.cs" />
     <Compile Include="ScoreSaberPatch\FixDictionary.cs" />
     <Compile Include="Views\LooperUI.cs" />
     <Compile Include="Models\AudioSpeedController.cs" />
