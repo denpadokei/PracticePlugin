@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PracticePlugin.Models
 {
-    public class SongSpeedParameeter : IEquatable<SongSpeedParameeter>
+    public class SongSpeedParameter : IEquatable<SongSpeedParameter>
     {
         public int Speed { get; set; }
         public float NJS { get; set; }
@@ -14,10 +14,10 @@ namespace PracticePlugin.Models
 
         public override bool Equals(object obj)
         {
-            return this.Equals(obj as SongSpeedParameeter);
+            return this.Equals(obj as SongSpeedParameter);
         }
 
-        public bool Equals(SongSpeedParameeter other)
+        public bool Equals(SongSpeedParameter other)
         {
             return !(other is null) &&
                    this.Speed == other.Speed &&
@@ -34,12 +34,12 @@ namespace PracticePlugin.Models
             return hashCode;
         }
 
-        public static bool operator ==(SongSpeedParameeter left, SongSpeedParameeter right)
+        public static bool operator ==(SongSpeedParameter left, SongSpeedParameter right)
         {
-            return EqualityComparer<SongSpeedParameeter>.Default.Equals(left, right);
+            return EqualityComparer<SongSpeedParameter>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(SongSpeedParameeter left, SongSpeedParameeter right)
+        public static bool operator !=(SongSpeedParameter left, SongSpeedParameter right)
         {
             return !(left == right);
         }
