@@ -90,7 +90,7 @@ namespace PracticePlugin.Views
         private float _defaultNJS;
         private float _defaultOffset;
         private SongSeeker _songSeeker;
-        private SongSpeedParameeter _beforeDeactiveParam;
+        private SongSpeedParameter _beforeDeactiveParam;
         private IGamePause _gamePause;
         [Inject]
         public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level, SongSeeker songSeeker, IGamePause gamePause)
@@ -123,7 +123,7 @@ namespace PracticePlugin.Views
         private void OnGamePause_didPauseEvent()
         {
             Logger.Info("OnGamePause_didPauseEvent");
-            this._beforeDeactiveParam = new SongSpeedParameeter
+            this._beforeDeactiveParam = new SongSpeedParameter
             {
                 Speed = this.Speed,
                 NJS = this.NJS,
@@ -134,7 +134,7 @@ namespace PracticePlugin.Views
         private void OnGamePause_willResumeEvent()
         {
             Logger.Info("OnGamePause_willResumeEvent");
-            var afterDeactiveParam = new SongSpeedParameeter
+            var afterDeactiveParam = new SongSpeedParameter
             {
                 Speed = this.Speed,
                 NJS = this.NJS,
