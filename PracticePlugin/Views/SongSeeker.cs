@@ -117,6 +117,7 @@ namespace PracticePlugin.Views
             }
             this._gamePause.didPauseEvent += this.OnGamePause_didPauseEvent;
             this._gamePause.willResumeEvent += this.OnGamePause_willResumeEvent;
+            this._init = true;
         }
 
         private void LooperUIOnOnDragEndEvent()
@@ -124,7 +125,7 @@ namespace PracticePlugin.Views
             this.PlaybackPosition = Mathf.Clamp(this.PlaybackPosition, this._looperUI.StartTime, this._looperUI.EndTime);
         }
 
-        private void OnGamePause_didPauseEvent()
+        protected void OnGamePause_didPauseEvent()
         {
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
@@ -136,9 +137,8 @@ namespace PracticePlugin.Views
             this.UpdateCurrentTimeText(this.PlaybackPosition);
         }
 
-        private void OnGamePause_willResumeEvent()
+        protected void OnGamePause_willResumeEvent()
         {
-            this._init = true;
             if (this._songAudioSource == null || this._songAudioSource.clip == null) {
                 return;
             }
