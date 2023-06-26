@@ -35,7 +35,7 @@ namespace PracticePlugin.Views
         public bool DisablePithCorrection
         {
             get => PluginConfig.Instance.DisablePitchCorrection;
-            set => PluginConfig.Instance.DisablePitchCorrection= value;
+            set => PluginConfig.Instance.DisablePitchCorrection = value;
         }
 
         private bool _disposedValue;
