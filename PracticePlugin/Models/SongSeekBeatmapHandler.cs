@@ -20,17 +20,32 @@ namespace PracticePlugin.Models
             NoteCutSoundEffectManager noteCutSoundEffectManager,
             BasicBeatmapObjectManager beatmapObjectManager,
             IReadonlyBeatmapData beatmapData,
+            GameplayModifiers gameplayModifiers,
+            IGameEnergyCounter gameEnergyCounter,
             DiContainer di)
         {
             this._audioTimeSyncController = audioTimeSyncController;
             this._beatmapCallbacksController = beatmapCallbacksController;
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
             this._beatmapObjectManager = beatmapObjectManager;
+            this._gameEnergyCounter = gameEnergyCounter;
+            this._gameEnergyCounter.gameEnergyDidReach0Event += this.OnGameEnergyCounter_gameEnergyDidReach0Event;
+            this._noFailOn0Energy = gameplayModifiers.noFailOn0Energy;
+            this._failed = false;
             var callBackManager = Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions");
             if (callBackManager != null) {
                 this._noodleObjectsCallbacksManager = di.TryResolve(callBackManager);
             }
         }
+
+        private void OnGameEnergyCounter_gameEnergyDidReach0Event()
+        {
+            if (!this._noFailOn0Energy) {
+                _failed = true;
+            }
+            this._gameEnergyCounter.gameEnergyDidReach0Event -= OnGameEnergyCounter_gameEnergyDidReach0Event;
+        }
+
         private readonly BeatmapCallbacksController _beatmapCallbacksController;
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
@@ -40,6 +55,9 @@ namespace PracticePlugin.Models
         private static readonly MethodInfo s_handleNoteControllerNoteWasMissed = null;
         private static readonly float s_minAheadTime = 1f;
         private SliderInteractionManager[] _sliderInteractionManager = null;
+        private readonly IGameEnergyCounter _gameEnergyCounter;
+        private bool _noFailOn0Energy;
+        private bool _failed;
 
         static SongSeekBeatmapHandler()
         {
@@ -52,6 +70,10 @@ namespace PracticePlugin.Models
 
         public void OnSongTimeChanged(float newSongTime)
         {
+            if (this._failed) {
+                return;
+            }
+
             var samplePos = newSongTime / this._audioTimeSyncController.songEndTime;
             var audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
             audioSource.timeSamples = Mathf.RoundToInt(Mathf.Lerp(0, audioSource.clip.samples, samplePos));
