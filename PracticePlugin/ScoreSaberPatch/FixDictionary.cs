@@ -64,6 +64,9 @@ namespace PracticePlugin.ScoreSaberPatch
                 foreach (var methodInfo in methodInfos) {
                     var arguments = methodInfo.GetParameters().Select(x => x.ParameterType).ToArray();
                     if (arguments.SequenceEqual(s_argumentTypes)) {
+                        if (s_fieldInfo == null) {
+                            s_fieldInfo = affinityType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance).FirstOrDefault(x => x.FieldType.Equals(typeof(Dictionary<NoteData, NoteCutInfo>)));
+                        }
                         return methodInfo;
                     }
                 }
