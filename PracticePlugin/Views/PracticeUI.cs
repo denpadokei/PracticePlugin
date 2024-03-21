@@ -93,7 +93,7 @@ namespace PracticePlugin.Views
         private SongSpeedParameter _beforeDeactiveParam;
         private IGamePause _gamePause;
         [Inject]
-        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, IDifficultyBeatmap level, SongSeeker songSeeker, IGamePause gamePause)
+        public void Constractor(GameplayCoreSceneSetupData gameplayCoreSceneSetupData, BeatmapObjectSpawnController.InitData initData, BeatmapLevel level, BeatmapKey beatmapKey, SongSeeker songSeeker, IGamePause gamePause)
         {
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;
             this._songSeeker = songSeeker;
@@ -106,7 +106,7 @@ namespace PracticePlugin.Views
                 this.Offset = this._defaultOffset;
             }
             if (PluginManager.EnabledPlugins.Any(x => x.Name == "NoodleExtensions")) {
-                var isNoodleMap = SongCore.Collections.RetrieveDifficultyData(level)?
+                var isNoodleMap = SongCore.Collections.RetrieveDifficultyData(level, beatmapKey)?
                     .additionalDifficultyData?
                     ._requirements?.Any(x => x == "Noodle Extensions") == true;
                 this.NJSInterractable = !isNoodleMap;

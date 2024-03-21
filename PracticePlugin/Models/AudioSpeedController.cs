@@ -28,9 +28,9 @@ namespace PracticePlugin.Models
                 return;
             }
             this._gamePause.didPauseEvent += this.GamePause_didPauseEvent;
-            this._audioSource = this._audioTimeSyncController.GetField<AudioSource, AudioTimeSyncController>("_audioSource");
+            this._audioSource = this._audioTimeSyncController._audioSource;
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
-            this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
+            this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.beatmapLevel.levelID;
             if (this._songTimeInfoEntity.PracticeMode) {
                 this._timeScale = !this.IsEqualToOne(this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul)
                     ? this._gameplayCoreSceneSetupData.practiceSettings.songSpeedMul
@@ -80,7 +80,7 @@ namespace PracticePlugin.Models
             if (!this._spawnController) {
                 return;
             }
-            var initData = this._audioTimeSyncController.GetField<AudioTimeSyncController.InitData, AudioTimeSyncController>("_initData");
+            var initData = this._audioTimeSyncController._initData;
             var newInitData = new AudioTimeSyncController.InitData(
                 initData.audioClip,
                 this._audioTimeSyncController.songTime,
@@ -108,8 +108,8 @@ namespace PracticePlugin.Models
 
         private void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
         {
-            var spawnMovementData = this._spawnController.GetField<BeatmapObjectSpawnMovementData, BeatmapObjectSpawnController>("_beatmapObjectSpawnMovementData");
-            var initData = this._spawnController.GetField<BeatmapObjectSpawnController.InitData, BeatmapObjectSpawnController>("_initData");
+            var spawnMovementData = this._spawnController._beatmapObjectSpawnMovementData;
+            var initData = this._spawnController._initData;
             var bpm = this._bpmController.currentBpm;
             if (PluginConfig.Instance.AdjustNJSWithSpeed) {
                 var newNJS = njs * (1 / this.TimeScale);
@@ -117,12 +117,12 @@ namespace PracticePlugin.Models
             }
             var oldAheadTime = spawnMovementData.spawnAheadTime;
             var lastProcessedNode = this._beatmapCallbackController.GetLastNode(oldAheadTime);
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_obstacleDataCallbackWrapper"));
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_noteDataCallbackWrapper"));
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_sliderDataCallbackWrapper"));
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController.GetField<BeatmapDataCallbackWrapper, BeatmapObjectSpawnController>("_spawnRotationCallbackWrapper"));
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._obstacleDataCallbackWrapper);
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._noteDataCallbackWrapper);
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._sliderDataCallbackWrapper);
+            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._spawnRotationCallbackWrapper);
             initData.Update(njs, noteJumpStartBeatOffset);
-            this._spawnController.SetField("_isInitialized", false);
+            this._spawnController._isInitialized = false;
             this._spawnController.Start();
             var newAheadTime = spawnMovementData.spawnAheadTime;
             if (lastProcessedNode != null) {
@@ -131,12 +131,12 @@ namespace PracticePlugin.Models
         }
         private void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
-            timeSync.SetField("_timeScale", newTimeScale);
-            timeSync.SetField("_startSongTime", timeSync.songTime);
-            timeSync.SetField("_audioStartTimeOffsetSinceStart", timeSync.GetProperty<float, AudioTimeSyncController>("timeSinceStart") - (timeSync.songTime + newData.songTimeOffset));
-            timeSync.SetField("_fixingAudioSyncError", false);
-            timeSync.SetField("_playbackLoopIndex", 0);
-            timeSync.GetField<AudioSource, AudioTimeSyncController>("_audioSource").pitch = newTimeScale;
+            timeSync._timeScale = newTimeScale;
+            timeSync._startSongTime = timeSync.songTime;
+            timeSync._audioStartTimeOffsetSinceStart = timeSync.timeSinceStart - (timeSync.songTime + newData.songTimeOffset);
+            timeSync._fixingAudioSyncError = false;
+            timeSync._playbackLoopIndex = 0;
+            timeSync._audioSource.pitch = newTimeScale;
         }
         private void ApplyPlaybackPosition()
         {
@@ -192,10 +192,10 @@ namespace PracticePlugin.Models
             this._bpmController = bpmController;
             this._beatmapCallbackController = beatmapCallbacksController;
             this._gamePause = gamePause;
-            if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID
+            if (this._songTimeInfoEntity.LastLevelID != this._gameplayCoreSceneSetupData.beatmapLevel.levelID
                 && !string.IsNullOrEmpty(this._songTimeInfoEntity.LastLevelID)) {
                 this._songTimeInfoEntity.PlayingNewSong = true;
-                this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.difficultyBeatmap.level.levelID;
+                this._songTimeInfoEntity.LastLevelID = this._gameplayCoreSceneSetupData.beatmapLevel.levelID;
             }
             else {
                 this._songTimeInfoEntity.PlayingNewSong = false;
