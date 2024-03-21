@@ -81,8 +81,8 @@ namespace PracticePlugin.Models
             audioSource.time -= aheadTime;
             this._audioTimeSyncController._prevAudioSamplePos = -1;
             this._audioTimeSyncController._songTime = newSongTime;
-            this._noteCutSoundEffectManager._prevNoteATime = -1;
-            this._noteCutSoundEffectManager._prevNoteBTime = -1;
+            this._noteCutSoundEffectManager._prevNoteATime = -1f;
+            this._noteCutSoundEffectManager._prevNoteBTime = -1f;
             this._beatmapCallbacksController.SetField("_startFilterTime", newSongTime + aheadTime);
             this._beatmapCallbacksController._prevSongTime = newSongTime;
             var dic = this._beatmapCallbacksController._callbacksInTimes;
@@ -112,7 +112,7 @@ namespace PracticePlugin.Models
                 if (item == null) {
                     continue;
                 }
-                item._finishMovementTime = -1;
+                item._finishMovementTime = -1f;
                 item.ManualUpdate();
             }
             while (cutSoundPoolContainer.activeItems.Any()) {
@@ -174,8 +174,8 @@ namespace PracticePlugin.Models
             var initData = this._audioTimeSyncController._initData;
             initData.SetField("startSongTime", newSongTime);
             this._audioTimeSyncController.SetField("_initData", initData);
-            this._noteCutSoundEffectManager._prevNoteATime = -1;
-            this._noteCutSoundEffectManager._prevNoteBTime = -1;
+            this._noteCutSoundEffectManager._prevNoteATime = -1f;
+            this._noteCutSoundEffectManager._prevNoteBTime = -1f;
             this._beatmapCallbacksController.SetField("_startFilterTime", newSongTime + 1f);
             this._beatmapCallbacksController._prevSongTime = newSongTime;
         }
