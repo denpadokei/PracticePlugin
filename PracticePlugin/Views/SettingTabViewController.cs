@@ -41,8 +41,7 @@ namespace PracticePlugin.Views
         private bool _disposedValue;
         public void Initialize()
         {
-            GameplaySetup.instance.RemoveTab("PracticePlugin");
-            GameplaySetup.instance.AddTab("PracticePlugin", "PracticePlugin.Views.SettingTabViewController", this);
+            GameplaySetup.Instance.AddTab("PracticePlugin", "PracticePlugin.Views.SettingTabViewController", this);
         }
 
         [UIAction("#post-parse")]
@@ -55,7 +54,7 @@ namespace PracticePlugin.Views
         {
             if (!this._disposedValue) {
                 if (disposing) {
-                    GameplaySetup.instance.RemoveTab("PracticePlugin");
+                    GameplaySetup.Instance.RemoveTab("PracticePlugin");
                 }
                 this._disposedValue = true;
             }
