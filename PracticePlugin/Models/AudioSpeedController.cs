@@ -120,7 +120,6 @@ namespace PracticePlugin.Models
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._obstacleDataCallbackWrapper);
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._noteDataCallbackWrapper);
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._sliderDataCallbackWrapper);
-            this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._spawnRotationCallbackWrapper);
             initData.Update(njs, noteJumpStartBeatOffset);
             this._spawnController._isInitialized = false;
             this._spawnController.Start();
