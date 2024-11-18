@@ -36,7 +36,7 @@ namespace PracticePlugin.Models
             (uiObj.transform as RectTransform).anchorMin = new Vector2(0, 0);
             (uiObj.transform as RectTransform).anchorMax = new Vector2(1, 1);
             (uiObj.transform as RectTransform).sizeDelta = new Vector2(0, 0);
-            BSMLParser.instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._practiceUI.ResourceName), canvas.gameObject, this._practiceUI);
+            BSMLParser.Instance.Parse(Utilities.GetResourceContent(Assembly.GetExecutingAssembly(), this._practiceUI.ResourceName), canvas.gameObject, this._practiceUI);
             uiObj.transform.SetParent(canvas, false);
             uiObj.transform.localScale = new Vector3(1, 1, 1);
             uiObj.transform.localPosition = new Vector3(0f, -3f, 0f);
