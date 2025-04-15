@@ -108,7 +108,7 @@ namespace PracticePlugin.Models
 
         private void UpdateSpawnMovementData(float njs, float noteJumpStartBeatOffset)
         {
-            var spawnMovementData = this._spawnController._beatmapObjectSpawnMovementData;
+            var spawnMovementData = this._spawnController._variableMovementDataProvider;
             var initData = this._spawnController._initData;
             var bpm = this._bpmController.currentBpm;
             if (PluginConfig.Instance.AdjustNJSWithSpeed) {
