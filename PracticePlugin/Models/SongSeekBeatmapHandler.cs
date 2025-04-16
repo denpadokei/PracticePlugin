@@ -63,7 +63,7 @@ namespace PracticePlugin.Models
         {
             var info = PluginManager.GetPlugin("CustomNotes");
             if (info != null) {
-                s_customNotesControllerInfo = Type.GetType("CustomNotes.Managers.CustomNoteController, CustomNotes");
+                s_customNotesControllerInfo = Type.GetType("CustomNotes.Components.CustomNoteController, CustomNotes");
                 s_handleNoteControllerNoteWasMissed = s_customNotesControllerInfo.GetMethod("HandleNoteControllerNoteWasMissed", BindingFlags.Instance | BindingFlags.Public);
             }
         }

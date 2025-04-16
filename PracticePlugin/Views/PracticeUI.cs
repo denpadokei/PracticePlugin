@@ -106,7 +106,7 @@ namespace PracticePlugin.Views
                 this.Offset = this._defaultOffset;
             }
             if (PluginManager.EnabledPlugins.Any(x => x.Name == "NoodleExtensions")) {
-                var isNoodleMap = SongCore.Collections.RetrieveDifficultyData(level, beatmapKey)?
+                var isNoodleMap = SongCore.Collections.GetCustomLevelSongDifficultyData(beatmapKey)?
                     .additionalDifficultyData?
                     ._requirements?.Any(x => x == "Noodle Extensions") == true;
                 this.NJSInterractable = !isNoodleMap;
