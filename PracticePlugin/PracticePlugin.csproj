@@ -12,7 +12,8 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <LocalRefsDir Condition="Exists('..\Refs')">..\Refs</LocalRefsDir>
-    <BeatSaberDir>$(LocalRefsDir)</BeatSaberDir>
+    <!-- Keep the CI-provided path (set by nicoco007/setup-beat-saber) when it is available. -->
+    <BeatSaberDir Condition="'$(BeatSaberDir)' == ''">$(LocalRefsDir)</BeatSaberDir>
     <TargetFrameworkProfile />
     <!-- Mirrors manifest.json so that the "Set up Beat Saber" CI action can pick up
          the game version and the mod's dependencies. Keep these in sync with manifest.json. -->
