@@ -29,13 +29,22 @@ namespace PracticePlugin.Models
             this._noteCutSoundEffectManager = noteCutSoundEffectManager;
             this._beatmapObjectManager = beatmapObjectManager;
             this._gameEnergyCounter = gameEnergyCounter;
+            this._diContainer = di;
             this._gameEnergyCounter.gameEnergyDidReach0Event += this.OnGameEnergyCounter_gameEnergyDidReach0Event;
             this._noFailOn0Energy = gameplayModifiers.noFailOn0Energy;
             this._failed = false;
-            var callBackManager = Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions");
-            if (callBackManager != null) {
-                this._noodleObjectsCallbacksManager = di.TryResolve(callBackManager);
+            var noodleManagerType = Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions");
+            if (noodleManagerType != null) {
+                this._noodleManagerType = noodleManagerType;
+                this._noodleStartFilterTimeField = AccessTools.Field(noodleManagerType, "_startFilterTime");
+                this._noodlePrevSongTimeField = AccessTools.Field(noodleManagerType, "_prevSongtime");
+                this._noodleCallbacksInTimeField = AccessTools.Field(noodleManagerType, "_callbacksInTime");
+                if (this._noodleStartFilterTimeField == null || this._noodlePrevSongTimeField == null || this._noodleCallbacksInTimeField == null) {
+                    Logger.Info("Noodle Extensions callback manager fields were not found; the seek/loop reset will not apply to Noodle objects.");
+                    this._noodleManagerType = null;
+                }
             }
+            Logger.Debug($"[SongSeekBeatmapHandler] Noodle callback manager type found: {this._noodleManagerType != null}");
         }
 
         private void OnGameEnergyCounter_gameEnergyDidReach0Event()
@@ -50,7 +59,12 @@ namespace PracticePlugin.Models
         private readonly NoteCutSoundEffectManager _noteCutSoundEffectManager;
         private readonly AudioTimeSyncController _audioTimeSyncController;
         private readonly BasicBeatmapObjectManager _beatmapObjectManager;
-        private readonly object _noodleObjectsCallbacksManager;
+        private readonly DiContainer _diContainer;
+        private readonly Type _noodleManagerType;
+        private readonly FieldInfo _noodleStartFilterTimeField;
+        private readonly FieldInfo _noodlePrevSongTimeField;
+        private readonly FieldInfo _noodleCallbacksInTimeField;
+        private object _noodleObjectsCallbacksManager;
         private static readonly Type s_customNotesControllerInfo = null;
         private static readonly MethodInfo s_handleNoteControllerNoteWasMissed = null;
         private static readonly float s_minAheadTime = 1f;
@@ -89,14 +103,17 @@ namespace PracticePlugin.Models
             foreach (var item in dic.Values) {
                 item.lastProcessedNode = null;
             }
-            if (this._noodleObjectsCallbacksManager != null) {
-                var noodleObjectsCallbacksManagerStartFilerSongTime = AccessTools.Field(Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions"), "_startFilterTime");
-                noodleObjectsCallbacksManagerStartFilerSongTime.SetValue(this._noodleObjectsCallbacksManager, newSongTime + aheadTime);
-                var noodleObjectsCallbacksManagerPrevSongTime = AccessTools.Field(Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions"), "_prevSongtime");
-                noodleObjectsCallbacksManagerPrevSongTime.SetValue(this._noodleObjectsCallbacksManager, newSongTime);
-                var noodleObjectsCallbacksManagerCallbacksIntime = AccessTools.Field(Type.GetType("NoodleExtensions.Managers.NoodleObjectsCallbacksManager, NoodleExtensions"), "_callbacksInTime");
-                if (noodleObjectsCallbacksManagerCallbacksIntime.GetValue(this._noodleObjectsCallbacksManager) is CallbacksInTime callbacks) {
-                    callbacks.lastProcessedNode = null;
+            if (this._noodleManagerType != null) {
+                var noodleManager = this.GetNoodleManager();
+                if (noodleManager != null) {
+                    // Noodle keeps its own copy of the filter time / progress, so it has to be
+                    // reset the same way the base controller is, otherwise Noodle objects are
+                    // spawned from the old position.
+                    this._noodleStartFilterTimeField.SetValue(noodleManager, newSongTime + aheadTime);
+                    this._noodlePrevSongTimeField.SetValue(noodleManager, newSongTime);
+                    if (this._noodleCallbacksInTimeField.GetValue(noodleManager) is CallbacksInTime callbacks) {
+                        callbacks.lastProcessedNode = null;
+                    }
                 }
             }
             // Thank you Kyle 1413!
@@ -105,9 +122,11 @@ namespace PracticePlugin.Models
             var burstSliderGameNotePoolContainer = this._beatmapObjectManager._burstSliderGameNotePoolContainer;
             var obstaclePoolContainer = this._beatmapObjectManager._obstaclePoolContainer;
             var cutSoundPoolContainer = this._noteCutSoundEffectManager._noteCutSoundEffectPoolContainer;
+            Logger.Debug($"[OnSongTimeChanged] active objects before despawn: notes={basicGameNotePoolContainer?.activeItems?.Count}, burstHead={burstSliderHeadGameNotePoolContainer?.activeItems?.Count}, burst={burstSliderGameNotePoolContainer?.activeItems?.Count}, obstacles={obstaclePoolContainer?.activeItems?.Count}");
             this.DespawnNotes(basicGameNotePoolContainer);
             this.DespawnNotes(burstSliderHeadGameNotePoolContainer);
             this.DespawnNotes(burstSliderGameNotePoolContainer);
+            Logger.Debug($"[OnSongTimeChanged] active objects after despawn: notes={basicGameNotePoolContainer?.activeItems?.Count}, burstHead={burstSliderHeadGameNotePoolContainer?.activeItems?.Count}, burst={burstSliderGameNotePoolContainer?.activeItems?.Count}");
             foreach (var item in obstaclePoolContainer.activeItems) {
                 if (item == null) {
                     continue;
@@ -131,6 +150,18 @@ namespace PracticePlugin.Models
                     item.enabled = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Resolves the Noodle Extensions callback manager lazily, because it is only bound
+        /// for maps that actually use Noodle data.
+        /// </summary>
+        private object GetNoodleManager()
+        {
+            if (this._noodleObjectsCallbacksManager == null && this._noodleManagerType != null && this._diContainer != null) {
+                this._noodleObjectsCallbacksManager = this._diContainer.TryResolve(this._noodleManagerType);
+            }
+            return this._noodleObjectsCallbacksManager;
         }
 
         /// <summary>
