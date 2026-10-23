@@ -3,6 +3,7 @@ using PracticePlugin.Configuration;
 using PracticePlugin.Extentions;
 using PracticePlugin.Views;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Scripting;
 using Zenject;
@@ -27,6 +28,10 @@ namespace PracticePlugin.Models
             if (!this._songTimeInfoEntity.PracticeMode) {
                 return;
             }
+            this._noodleCallbacks = new NoodleCallbacksExtention(this._diContainer);
+            var spawnInitData = this._spawnController._initData;
+            this._lastAppliedNJS = spawnInitData.noteJumpMovementSpeed;
+            this._lastAppliedOffset = spawnInitData.GetField<float, BeatmapObjectSpawnController.InitData>("noteJumpValue");
             this._gamePause.didPauseEvent += this.GamePause_didPauseEvent;
             this._audioSource = this._audioTimeSyncController._audioSource;
             this._practiceUI.PropertyChanged += this.PracticeUI_PropertyChanged;
@@ -115,18 +120,47 @@ namespace PracticePlugin.Models
                 var newNJS = njs * (1 / this.TimeScale);
                 njs = newNJS;
             }
+
+            // Playback speed alone does not change how objects are spawned. Restarting the
+            // spawn controller is what duplicates the chart on Noodle Extensions maps, so
+            // only restart when the effective NJS or the spawn offset actually changed.
+            if (Mathf.Approximately(njs, this._lastAppliedNJS) && Mathf.Approximately(noteJumpStartBeatOffset, this._lastAppliedOffset)) {
+                Logger.Debug($"[UpdateSpawnMovementData] NJS ({njs}) and offset ({noteJumpStartBeatOffset}) unchanged, skipping spawn controller restart.");
+                return;
+            }
+
             var oldAheadTime = spawnMovementData.spawnAheadTime;
-            var lastProcessedNode = this._beatmapCallbackController.GetLastNode(oldAheadTime);
+            var lastProcessedNodes = this._beatmapCallbackController.SnapshotLastProcessedNodes();
+            var fallbackNode = lastProcessedNodes.TryGetValue(oldAheadTime, out var node) ? node : null;
+
+            var noodleOwnsSpawnCallbacks = this._noodleCallbacks != null && this._noodleCallbacks.Available
+                && (this._noodleCallbacks.HasCallback(this._spawnController._noteDataCallbackWrapper)
+                    || this._noodleCallbacks.HasCallback(this._spawnController._obstacleDataCallbackWrapper)
+                    || this._noodleCallbacks.HasCallback(this._spawnController._sliderDataCallbackWrapper));
+
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._obstacleDataCallbackWrapper);
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._noteDataCallbackWrapper);
             this._beatmapCallbackController.RemoveBeatmapCallback(this._spawnController._sliderDataCallbackWrapper);
+
+            if (noodleOwnsSpawnCallbacks) {
+                var removedCount = 0;
+                removedCount += this._noodleCallbacks.RemoveCallback(this._spawnController._obstacleDataCallbackWrapper) ? 1 : 0;
+                removedCount += this._noodleCallbacks.RemoveCallback(this._spawnController._noteDataCallbackWrapper) ? 1 : 0;
+                removedCount += this._noodleCallbacks.RemoveCallback(this._spawnController._sliderDataCallbackWrapper) ? 1 : 0;
+                if (removedCount == 0) {
+                    Logger.Error("Noodle Extensions owns the spawn callbacks but none of them could be removed. Skipping the spawn controller restart to avoid duplicating the chart.");
+                    return;
+                }
+                Logger.Debug($"[UpdateSpawnMovementData] removed {removedCount} Noodle spawn callback(s) before restarting the spawn controller.");
+            }
+
             initData.Update(njs, noteJumpStartBeatOffset);
             this._spawnController._isInitialized = false;
             this._spawnController.Start();
-            var newAheadTime = spawnMovementData.spawnAheadTime;
-            if (lastProcessedNode != null) {
-                this._beatmapCallbackController.SetNewLastNodeForCallback(lastProcessedNode, newAheadTime);
-            }
+            this._lastAppliedNJS = njs;
+            this._lastAppliedOffset = noteJumpStartBeatOffset;
+
+            this._beatmapCallbackController.RestoreLastProcessedNodes(lastProcessedNodes, fallbackNode);
         }
         private void ResetTimeSync(AudioTimeSyncController timeSync, float newTimeScale, AudioTimeSyncController.InitData newData)
         {
@@ -173,12 +207,17 @@ namespace PracticePlugin.Models
         private IBpmController _bpmController;
         private BeatmapCallbacksController _beatmapCallbackController;
         private IGamePause _gamePause;
+        private DiContainer _diContainer;
+        private NoodleCallbacksExtention _noodleCallbacks;
+        private float _lastAppliedNJS;
+        private float _lastAppliedOffset;
         #endregion
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(AudioManager audioManager, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController, IGamePause gamePause)
+        public void Constractor(AudioManager audioManager, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController, IGamePause gamePause, DiContainer container)
         {
+            this._diContainer = container;
             this._songTimeInfoEntity = songTimeInfoEntity;
             this._spawnController = beatmapObjectSpawnController;
             this._gameplayCoreSceneSetupData = gameplayCoreSceneSetupData;

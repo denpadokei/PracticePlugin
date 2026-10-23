@@ -158,6 +158,7 @@
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="Extentions\BeatmapCallbacksControllerExtention.cs" />
     <Compile Include="Extentions\InitDataExtention.cs" />
+    <Compile Include="Extentions\NoodleCallbacksExtention.cs" />
     <Compile Include="Installers\PlayerInstaller.cs" />
     <Compile Include="Installers\PracticeAppInstaller.cs" />
     <Compile Include="Installers\PracticeMenuInstaller.cs" />
