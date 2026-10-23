@@ -1,0 +1,125 @@
+name: Build
+
+on:
+  push:
+    paths:
+      - .github/workflows/build.yml
+      - PracticePlugin/**
+      - PracticePlugin.sln
+  pull_request:
+    paths:
+      - .github/workflows/build.yml
+      - PracticePlugin/**
+      - PracticePlugin.sln
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    outputs:
+      version: ${{ steps.mod-info.outputs.version }}
+      game-version: ${{ steps.mod-info.outputs.game-version }}
+      zip-name: ${{ steps.mod-info.outputs.zip-name }}
+      zip-path: ${{ steps.mod-info.outputs.zip-path }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Beat Saber
+        uses: nicoco007/setup-beat-saber@v1
+        with:
+          project-path: ${{ github.workspace }}\PracticePlugin\PracticePlugin.csproj
+
+      - name: Build Release
+        run: dotnet build "${{ github.workspace }}\PracticePlugin\PracticePlugin.csproj" -c Release -p:ContinuousIntegrationBuild=True
+
+      - name: Collect build info
+        id: mod-info
+        shell: pwsh
+        run: |
+          $project = Join-Path $env:GITHUB_WORKSPACE 'PracticePlugin'
+          $manifest = Get-Content -Path (Join-Path $project 'manifest.json') -Encoding utf8 | ConvertFrom-Json
+          $zip = Get-ChildItem -Path (Join-Path $project 'bin\Release\zip') -Filter '*.zip' | Select-Object -First 1
+
+          if (-not $zip) {
+            Write-Error 'Build did not produce a release zip in bin\Release\zip'
+            exit 1
+          }
+
+          @(
+            "version=$($manifest.version)",
+            "game-version=$($manifest.gameVersion)",
+            "zip-name=$($zip.Name)",
+            "zip-path=$($zip.FullName)"
+          ) | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Upload Release
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.mod-info.outputs.zip-name }}
+          path: ${{ steps.mod-info.outputs.zip-path }}
+          if-no-files-found: error
+
+  release:
+    name: Release
+    runs-on: windows-latest
+    needs: build
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: write
+
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Check for existing release
+        id: check-release
+        shell: pwsh
+        run: |
+          $version = '${{ needs.build.outputs.version }}'
+          gh release view "$version" --json tagName | Out-Null
+          if ($LASTEXITCODE -eq 0) {
+            'skip=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          } else {
+            'skip=false' | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          }
+
+      - name: Download mod zip
+        if: steps.check-release.outputs.skip != 'true'
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ needs.build.outputs.zip-name }}
+          path: mod-zip
+
+      - name: Create release
+        if: steps.check-release.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          $version = '${{ needs.build.outputs.version }}'
+          $gameVersion = '${{ needs.build.outputs.game-version }}'
+          $zip = Get-ChildItem -Path 'mod-zip' -Filter '*.zip' | Select-Object -First 1
+
+          if (-not $zip) {
+            Write-Error 'Downloaded mod zip is missing'
+            exit 1
+          }
+
+          # Versions such as 6.1.2-rc1 are published as pre-releases.
+          $options = @()
+          if ($version -match '-(rc|beta|alpha|preview)') {
+            $options += '--prerelease'
+          }
+
+          gh release create "$version" "$($zip.FullName)" `
+            --title "PracticePlugin-$version-bs$gameVersion" `
+            --target ${{ github.sha }} `
+            --generate-notes `
+            $options

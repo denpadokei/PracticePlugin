@@ -1,4 +1,5 @@
 ### Plugin for Beat Saber to control playback speed, seek through songs and set up looping sections.
+[![Build](https://github.com/denpadokei/PracticePlugin/actions/workflows/build.yml/badge.svg)](https://github.com/denpadokei/PracticePlugin/actions/workflows/build.yml)
 ##### Original Plugin made by Xyonico: https://github.com/xyonico/PracticePlugin
 ![Preview](https://i.imgur.com/vdpHLbR.png)
 
