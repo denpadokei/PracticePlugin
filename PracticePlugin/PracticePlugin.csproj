@@ -17,7 +17,7 @@
     <TargetFrameworkProfile />
     <!-- Mirrors manifest.json so that the "Set up Beat Saber" CI action can pick up
          the game version and the mod's dependencies. Keep these in sync with manifest.json. -->
-    <GameVersion>1.44.1</GameVersion>
+    <GameVersion>1.40.8</GameVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -149,15 +149,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <DependsOn Include="BSIPA" Version="^4.3.7" />
-    <DependsOn Include="SiraUtil" Version="^3.3.1" />
-    <DependsOn Include="BeatSaberMarkupLanguage" Version="^1.14.1" />
-    <DependsOn Include="SongCore" Version="^3.16.0" />
+    <DependsOn Include="BSIPA" Version="^4.3.5" />
+    <DependsOn Include="SiraUtil" Version="^3.1.14" />
+    <DependsOn Include="BeatSaberMarkupLanguage" Version="^1.12.5" />
+    <DependsOn Include="SongCore" Version="^3.15.3" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
     <Compile Include="Extentions\BeatmapCallbacksControllerExtention.cs" />
     <Compile Include="Extentions\InitDataExtention.cs" />
+    <Compile Include="Extentions\NoodleCallbacksExtention.cs" />
     <Compile Include="Installers\PlayerInstaller.cs" />
     <Compile Include="Installers\PracticeAppInstaller.cs" />
     <Compile Include="Installers\PracticeMenuInstaller.cs" />
