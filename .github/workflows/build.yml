@@ -37,7 +37,7 @@ jobs:
           project-path: ${{ github.workspace }}\PracticePlugin\PracticePlugin.csproj
 
       - name: Build Release
-        run: dotnet build "${{ github.workspace }}\PracticePlugin\PracticePlugin.csproj" -c Release -p:ContinuousIntegrationBuild=True
+        run: dotnet build "${{ github.workspace }}\PracticePlugin\PracticePlugin.csproj" -c Release -p:DisableZipRelease=false
 
       - name: Collect build info
         id: mod-info

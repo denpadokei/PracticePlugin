@@ -14,6 +14,9 @@
     <LocalRefsDir Condition="Exists('..\Refs')">..\Refs</LocalRefsDir>
     <BeatSaberDir>$(LocalRefsDir)</BeatSaberDir>
     <TargetFrameworkProfile />
+    <!-- Mirrors manifest.json so that the "Set up Beat Saber" CI action can pick up
+         the game version and the mod's dependencies. Keep these in sync with manifest.json. -->
+    <GameVersion>1.44.1</GameVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -143,6 +146,12 @@
     <Reference Include="Zenject-usage, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <DependsOn Include="BSIPA" Version="^4.3.7" />
+    <DependsOn Include="SiraUtil" Version="^3.3.1" />
+    <DependsOn Include="BeatSaberMarkupLanguage" Version="^1.14.1" />
+    <DependsOn Include="SongCore" Version="^3.16.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfig.cs" />
