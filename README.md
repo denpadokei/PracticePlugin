@@ -11,8 +11,8 @@
 - Note: If you set a starting time for the song using the built in practice mode, the map literally starts at that point, so going back to before the starting point in practice plugin won't have any notes
 
 ---
-## Changelog v9.1.2
-- Fixed charts being duplicated (stacked notes, extra misses, lag) when changing playback speed on maps that use Noodle Extensions precision placement. The spawn controller is no longer restarted when only the speed changes, and Noodle's spawn callbacks are removed before a restart.
+## Changelog v9.1.2 (Beat Saber 1.40.8)
+- Fixed charts being duplicated (stacked notes, extra misses, instant fail, heavy lag) when changing playback speed on maps that use Noodle Extensions precision placement (#47). The spawn controller is no longer restarted when only the speed changes, and Noodle's spawn callbacks are now removed from Noodle's own `CallbacksInTime` before a restart is really needed.
 - Beatmap callback progress is now preserved for every ahead time when the spawn controller is restarted.
 - The seek/loop reset now handles Noodle Extensions internals more defensively and logs active object counts for debugging.
 ## Changelog v4.2.3

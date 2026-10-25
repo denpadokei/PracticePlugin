@@ -196,7 +196,7 @@ namespace PracticePlugin.Models
         private GameplayCoreSceneSetupData _gameplayCoreSceneSetupData;
         private AudioTimeSyncController _audioTimeSyncController;
         private AudioSource _audioSource;
-        private AudioManager _mixer;
+        private AudioManagerSO _mixer;
         private SongTimeInfoEntity _songTimeInfoEntity;
         private SongSeekBeatmapHandler _songSeekBeatmapHandler;
         private LooperUI _looperUI;
@@ -215,7 +215,7 @@ namespace PracticePlugin.Models
         //ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*ﾟ+｡｡+ﾟ*｡+ﾟ ﾟ+｡*
         #region // 構築・破棄
         [Inject]
-        public void Constractor(AudioManager audioManager, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController, IGamePause gamePause, DiContainer container)
+        public void Constractor(AudioManagerSO audioManagerSO, SongTimeInfoEntity songTimeInfoEntity, BeatmapObjectSpawnController beatmapObjectSpawnController, GameplayCoreSceneSetupData gameplayCoreSceneSetupData, AudioTimeSyncController audioTimeSyncController, SongSeekBeatmapHandler songSeekBeatmapHandler, LooperUI looperUI, PracticeUI practiceUI, SongSeeker songSeeker, IBpmController bpmController, BeatmapCallbacksController beatmapCallbacksController, IGamePause gamePause, DiContainer container)
         {
             this._diContainer = container;
             this._songTimeInfoEntity = songTimeInfoEntity;
@@ -226,7 +226,7 @@ namespace PracticePlugin.Models
             this._looperUI = looperUI;
             this._practiceUI = practiceUI;
             this._songSeeker = songSeeker;
-            this._mixer = audioManager;
+            this._mixer = audioManagerSO;
             this._bpmController = bpmController;
             this._beatmapCallbackController = beatmapCallbacksController;
             this._gamePause = gamePause;
